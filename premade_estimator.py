@@ -13,7 +13,7 @@ def train_input_fn(features, labels, batch_size):
     print(dataset)
     dataset = dataset.shuffle(buffer_size=1000).repeat(
         count=None).batch(batch_size)
-    print(data)
+    print(dataset)
     return dataset.make_one_shot_iterator().get_next()
 
 
