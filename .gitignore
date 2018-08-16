@@ -103,4 +103,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 /vae_gan/result
+/vae_gan/result_vae
+/vae_gan/result_gan
 .idea
