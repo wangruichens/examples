@@ -10,12 +10,12 @@ from vae_gan.generator import Generator
 
 
 def concat_elu(inputs):
-    return tf.nn.elu(tf.concat(3, [-inputs, inputs]))
+    return tf.nn.elu(tf.concat([-inputs, inputs], 3))
 
 
 class GAN(Generator):
     def __init__(self, hidden_size, batch_size, learning_rate):
-        self.input_tensor = tf.placeholder(tf.float32, [None, 28, 28])
+        self.input_tensor = tf.placeholder(tf.float32, [None, 28 * 28])
 
         with arg_scope([layers.conv2d, layers.conv2d_transpose],
                        activation_fn=concat_elu,
@@ -53,29 +53,11 @@ class GAN(Generator):
         '''
         return (losses.sigmoid_cross_entropy(D1, tf.ones(tf.shape(D1))) + losses.sigmoid_cross_entropy(D2, tf.zeros(
             tf.shape(D1))))
-    def __get_generator_loss(self,D2):
-        return losses.sigmoid_cross_entropy(D2,tf.ones(tf.shape(D2)))
 
-    def update_params(self,inputs):
-        d_loss_value=self.sess.run(self.train_discrimator,{self.input_tensor:inputs})
-        g_loss_value=self.sess.run(self.train_generator)
+    def __get_generator_loss(self, D2):
+        return losses.sigmoid_cross_entropy(D2, tf.ones(tf.shape(D2)))
+
+    def update_params(self, inputs):
+        d_loss_value = self.sess.run(self.train_discrimator, {self.input_tensor: inputs})
+        g_loss_value = self.sess.run(self.train_generator)
         return g_loss_value
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

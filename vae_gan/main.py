@@ -21,7 +21,7 @@ flags.DEFINE_integer("updates_per_epoch", 1000, "number of updates per epoch")
 flags.DEFINE_integer("max_epoch", 10, "max epoch")
 flags.DEFINE_float("learning_rate", 1e-2, "learning rate")
 flags.DEFINE_string("working_directory", "./result", "")
-flags.DEFINE_integer("hidden_size", 128, "size of the hidden VAE unit")
+flags.DEFINE_integer("hidden_size", 10, "size of the hidden VAE unit")
 flags.DEFINE_string("model", "vae", "gan or vae")
 
 FLAGS=flags.FLAGS
@@ -34,9 +34,9 @@ if __name__ == '__main__':
         os.makedirs(FLAGS.working_directory)
     mnist=input_data.read_data_sets(data_directory,one_hot=True)
     assert FLAGS.model in ['vae','gan']
-    model = VAE(FLAGS.hidden_size, FLAGS.batch_size, FLAGS.learning_rate)
-    if FLAGS.model == 'gan':
-        model = GAN(FLAGS.hidden_size, FLAGS.batch_size, FLAGS.learning_rate)
+    # model = VAE(FLAGS.hidden_size, FLAGS.batch_size, FLAGS.learning_rate)
+    # if FLAGS.model == 'gan':
+    model = GAN(FLAGS.hidden_size, FLAGS.batch_size, FLAGS.learning_rate)
 
     print('Start training...')
     for epoch in range(FLAGS.max_epoch):
