@@ -17,7 +17,7 @@ def show_all_variables():
     slim.model_analyzer.analyze_vars(model_vars, print_info=True)
 
 def load_mnist(dataset_name):
-    data_dir = dataset_name
+    data_dir = '../'+dataset_name
 
     def extract_data(filename, num_data, head_size, data_size):
         with gzip.open(filename) as bytestream:
