@@ -90,6 +90,7 @@ class GAN(object):
         self.d_loss = d_loss_real + d_loss_fake
 
         # get loss for generator
+        # Note maybe different from the paper. Goodfellow trick to avoid gradient descent
         self.g_loss = tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(logits=D_fake_logits, labels=tf.ones_like(D_fake)))
 
