@@ -76,7 +76,6 @@ class VAE(object):
             net = tf.nn.relu(
                 bn(deconv2d(net, [self.batch_size, 14, 14, 64], 4, 4, 2, 2, name='de_dc3'), is_training=is_training,
                    scope='de_bn3'))
-
             out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, 28, 28, 1], 4, 4, 2, 2, name='de_dc4'))
             return out
 
