@@ -126,7 +126,8 @@ class GAN(object):
         tf.global_variables_initializer().run()
 
         # graph inputs for visualize training results
-        self.sample_z = np.random.uniform(-1, 1, size=(self.batch_size, self.z_dim))
+        # self.sample_z = np.random.uniform(-1, 1, size=(self.batch_size, self.z_dim))
+        self.sample_z =np.random.normal(0,1,size=(self.batch_size, self.z_dim))
         # saver to save model
         self.saver = tf.train.Saver()
 
@@ -153,7 +154,8 @@ class GAN(object):
             # get batch data
             for idx in range(start_batch_id, self.num_batches):
                 batch_images = self.data_X[idx*self.batch_size:(idx+1)*self.batch_size]
-                batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(np.float32)
+                batch_z=np.random.normal(0,1,size=(self.batch_size, self.z_dim))
+                # batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(np.float32)
 
                 # update D network
                 _, summary_str, d_loss = self.sess.run([self.d_optim, self.d_sum, self.d_loss],
@@ -198,7 +200,8 @@ class GAN(object):
 
         """ random condition, random noise """
 
-        z_sample = np.random.uniform(-1, 1, size=(self.batch_size, self.z_dim))
+        # z_sample = np.random.uniform(-1, 1, size=(self.batch_size, self.z_dim))
+        z_sample = np.random.normal(0,1,size=(self.batch_size, self.z_dim))
 
         samples = self.sess.run(self.fake_images, feed_dict={self.z: z_sample})
 
