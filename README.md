@@ -1,1 +1,3 @@
-# tf_begin
+# Machine Learning Examples
+
+Aim to create a collection of machine learning / deep learning examples, which include mlp,gan,vae. Also include some tensorflow examples about estimator, eager execuation etc...
