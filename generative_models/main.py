@@ -9,7 +9,7 @@ from generative_models.infoGAN import infoGAN
 # from WGAN import WGAN
 # from WGAN_GP import WGAN_GP
 # from DRAGAN import DRAGAN
-# from LSGAN import LSGAN
+from generative_models.LSGAN import LSGAN
 # from BEGAN import BEGAN
 
 ## VAE Variants
@@ -29,7 +29,7 @@ def parse_args():
     desc = "Tensorflow implementation of GAN collections"
     parser = argparse.ArgumentParser(description=desc)
 
-    parser.add_argument('--gan_type', type=str, default='infoGAN',
+    parser.add_argument('--gan_type', type=str, default='LSGAN',
                         choices=['GAN', 'CGAN', 'infoGAN', 'ACGAN', 'EBGAN', 'BEGAN', 'WGAN', 'WGAN_GP', 'DRAGAN',
                                  'LSGAN', 'VAE', 'CVAE'],
                         help='The type of GAN')
@@ -79,7 +79,7 @@ def main():
     # open session
     # models = [GAN, CGAN, infoGAN, ACGAN, EBGAN, WGAN, WGAN_GP, DRAGAN,
     #           LSGAN, BEGAN, VAE, CVAE]
-    models = [VAE,GAN,infoGAN]
+    models = [VAE,GAN,infoGAN,LSGAN]
     with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
         # declare instance for GAN
 
