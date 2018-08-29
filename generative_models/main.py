@@ -2,19 +2,19 @@ import os
 
 ## GAN Variants
 from generative_models.GAN import GAN
-# from CGAN import CGAN
+from generative_models.CGAN import CGAN
 from generative_models.infoGAN import infoGAN
-# from ACGAN import ACGAN
-# from EBGAN import EBGAN
-# from WGAN import WGAN
-# from WGAN_GP import WGAN_GP
-# from DRAGAN import DRAGAN
+from generative_models.ACGAN import ACGAN
+from generative_models.EBGAN import EBGAN
+from generative_models.WGAN import WGAN
+from generative_models.WGAN_GP import WGAN_GP
+from generative_models.DRAGAN import DRAGAN
 from generative_models.LSGAN import LSGAN
-# from BEGAN import BEGAN
+from generative_models.BEGAN import BEGAN
 
 ## VAE Variants
 from generative_models.VAE import VAE
-# from CVAE import CVAE
+from generative_models.CVAE import CVAE
 
 from generative_models.utils import show_all_variables
 from generative_models.utils import check_folder
@@ -77,9 +77,8 @@ def main():
         exit()
 
     # open session
-    # models = [GAN, CGAN, infoGAN, ACGAN, EBGAN, WGAN, WGAN_GP, DRAGAN,
-    #           LSGAN, BEGAN, VAE, CVAE]
-    models = [VAE,GAN,infoGAN,LSGAN]
+    models = [GAN, CGAN, infoGAN, ACGAN, EBGAN, WGAN, WGAN_GP, DRAGAN,
+              LSGAN, BEGAN, VAE, CVAE]
     with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
         # declare instance for GAN
 

@@ -5,10 +5,10 @@ import time
 import tensorflow as tf
 import numpy as np
 
-from ops import *
-from utils import *
+from generative_models.ops import *
+from generative_models.utils import *
 
-import prior_factory as prior
+import generative_models.prior_factory as prior
 
 class CVAE(object):
     model_name = "CVAE"     # name for checkpoint

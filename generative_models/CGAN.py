@@ -5,8 +5,8 @@ import time
 import tensorflow as tf
 import numpy as np
 
-from ops import *
-from utils import *
+from generative_models.ops import *
+from generative_models.utils import *
 
 class CGAN(object):
     model_name = "CGAN"     # name for checkpoint
