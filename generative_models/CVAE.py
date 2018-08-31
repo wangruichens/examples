@@ -79,7 +79,7 @@ class CVAE(object):
         with tf.variable_scope("decoder", reuse=reuse):
 
             # merge noise and label
-            z = concat([z, y], 1)
+            z = tf.concat([z, y], 1)
 
             net = tf.nn.relu(bn(linear(z, 1024, scope='de_fc1'), is_training=is_training, scope='de_bn1'))
             net = tf.nn.relu(bn(linear(net, 128 * 7 * 7, scope='de_fc2'), is_training=is_training, scope='de_bn2'))

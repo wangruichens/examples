@@ -71,7 +71,7 @@ class CGAN(object):
         with tf.variable_scope("generator", reuse=reuse):
 
             # merge noise and label
-            z = concat([z, y], 1)
+            z = tf.concat([z, y], 1)
 
             net = tf.nn.relu(bn(linear(z, 1024, scope='g_fc1'), is_training=is_training, scope='g_bn1'))
             net = tf.nn.relu(bn(linear(net, 128 * 7 * 7, scope='g_fc2'), is_training=is_training, scope='g_bn2'))

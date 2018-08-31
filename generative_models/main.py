@@ -29,7 +29,7 @@ def parse_args():
     desc = "Tensorflow implementation of GAN collections"
     parser = argparse.ArgumentParser(description=desc)
 
-    parser.add_argument('--gan_type', type=str, default='LSGAN',
+    parser.add_argument('--gan_type', type=str, default='CVAE',
                         choices=['GAN', 'CGAN', 'infoGAN', 'ACGAN', 'EBGAN', 'BEGAN', 'WGAN', 'WGAN_GP', 'DRAGAN',
                                  'LSGAN', 'VAE', 'CVAE'],
                         help='The type of GAN')
