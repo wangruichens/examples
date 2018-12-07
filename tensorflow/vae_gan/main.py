@@ -16,7 +16,7 @@ from vae_gan.gan import GAN
 flags=tf.flags
 logging=tf.logging
 
-flags.DEFINE_integer('batch_size',128,'batch size')
+flags.DEFINE_integer('batch_size',64,'batch size')
 flags.DEFINE_integer("updates_per_epoch", 1000, "number of updates per epoch")
 flags.DEFINE_integer("max_epoch", 10, "max epoch")
 flags.DEFINE_float("learning_rate", 1e-2, "learning rate")
@@ -34,9 +34,9 @@ if __name__ == '__main__':
         os.makedirs(FLAGS.working_directory)
     mnist=input_data.read_data_sets(data_directory,one_hot=True)
     assert FLAGS.model in ['vae','gan']
-    # model = VAE(FLAGS.hidden_size, FLAGS.batch_size, FLAGS.learning_rate)
+    model = VAE(FLAGS.hidden_size, FLAGS.batch_size, FLAGS.learning_rate)
     # if FLAGS.model == 'gan':
-    model = GAN(FLAGS.hidden_size, FLAGS.batch_size, FLAGS.learning_rate)
+    # model = GAN(FLAGS.hidden_size, FLAGS.batch_size, FLAGS.learning_rate)
 
     print('Start training...')
     for epoch in range(FLAGS.max_epoch):
