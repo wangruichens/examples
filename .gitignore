@@ -109,3 +109,4 @@ venv.bak/
 /generative_models/logs
 /generative_models/checkpoint
 /generative_models/results
+/pytorch/demos/data/
