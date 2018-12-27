@@ -19,10 +19,10 @@ test_dir='./forest_cover/test.csv'
 
 train_data = ds.ForestDataset(train_dir)
 # Drop : whether to drop the last batch may be not complete
-train_loader = DataLoader(train_data, batch_size=64, num_workers=1, drop_last=False)
+train_loader = DataLoader(train_data, batch_size=1024, num_workers=1, drop_last=False)
 
-# device = torch.device("cuda:0" if cuda.is_available() else "cpu")
-device='cpu'
+device = torch.device("cuda:0" if cuda.is_available() else "cpu")
+# device='cpu'
 print(device)
 print(cuda.get_device_name(0))
 
@@ -36,7 +36,7 @@ criterion = nn.BCEWithLogitsLoss()
 loss_log=[]
 iter_list=[]
 acc_list=[]
-epoch_num=5
+epoch_num=100
 iter_num=0
 
 for epoch in range(epoch_num):
@@ -53,7 +53,8 @@ for epoch in range(epoch_num):
         loss=criterion(output,label)
         v,i=torch.max(output,1)
         v2,i2=torch.max(label,1)
-        acc=(i==i2).sum().data.numpy()/output.size()[0]
+
+        acc=(i.cpu()==i2.cpu()).sum().data.numpy()/output.size()[0]
         # print('acc',acc)
 
         iter_loss=loss.item()
@@ -96,7 +97,7 @@ plt.title("Acc vs Number of iteration")
 
 
 # Predict
-#
+
 # test_data=ds.ForestDatasetTest(test_dir)
 # test_loader = DataLoader(test_data, batch_size=64, num_workers=1, drop_last=False,shuffle=False)
 # predicted_list=[]
