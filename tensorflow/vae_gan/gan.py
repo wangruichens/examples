@@ -5,8 +5,8 @@ from tensorflow.contrib import losses
 from tensorflow.contrib.framework import arg_scope, get_or_create_global_step
 import tensorflow as tf
 
-from vae_gan.utils import discriminator, decoder
-from vae_gan.generator import Generator
+from utils import discriminator, decoder
+from generator import Generator
 
 
 def concat_elu(inputs):

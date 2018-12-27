@@ -5,8 +5,8 @@ from tensorflow.contrib import layers
 from tensorflow.contrib import losses
 from tensorflow.contrib.framework import arg_scope, get_or_create_global_step
 
-from vae_gan.utils import encoder, decoder
-from vae_gan.generator import Generator
+from utils import encoder, decoder
+from generator import Generator
 
 
 class VAE(Generator):

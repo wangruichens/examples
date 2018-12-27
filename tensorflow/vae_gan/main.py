@@ -10,8 +10,8 @@ from tensorflow.contrib.framework import arg_scope
 from scipy.misc import imsave
 from tensorflow.examples.tutorials.mnist import input_data
 
-from vae_gan.vae import VAE
-from vae_gan.gan import GAN
+from vae import VAE
+from gan import GAN
 
 flags=tf.flags
 logging=tf.logging
