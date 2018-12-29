@@ -110,3 +110,6 @@ venv.bak/
 /generative_models/checkpoint
 /generative_models/results
 /pytorch/demos/data/
+*.csv
+/tensorflow/vae_gan/result/
+/pytorch/cifar10_official_demo/data/
