@@ -4,8 +4,8 @@
 # Refers        :
 # Returns       :
 
-import pytorch.dcn.dataset_helper as ds
-import pytorch.dcn.DCN as DCNet
+import deep_cross_network.dataset_helper as ds
+import deep_cross_network.DCN as DCNet
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -98,29 +98,31 @@ plt.title("Acc vs Number of iteration")
 
 # Predict
 
-# test_data=ds.ForestDatasetTest(test_dir)
-# test_loader = DataLoader(test_data, batch_size=64, num_workers=1, drop_last=False,shuffle=False)
-# predicted_list=[]
-#
-# with torch.no_grad():
-#     for sparse_feature,dense_feature in test_loader:
-#         sparse_feature,dense_feature=sparse_feature.to(device),dense_feature.to(device)
-#         # print(sparse_feature.shape)
-#         # print(dense_feature.shape)
-#         output=model(sparse_feature,dense_feature)
-#         # print(output.shape)
-#         _, predicted = torch.max(output.data, 1)
-#         # print(predicted.shape)
-#         # print(predicted)
-#         predicted_list=predicted_list+list(predicted.numpy())
-#
-# import pandas as pd
-# df_pred = pd.DataFrame()
-# aux = pd.read_csv(test_dir)
-# df_pred['Id'] = aux['Id']
-# df_pred['Cover_Type'] = [x+1 for x in predicted_list]
-# df_pred.to_csv('./dcn.csv', index=False)
-# print('fininshed...')
+test_data=ds.ForestDatasetTest(test_dir)
+test_loader = DataLoader(test_data, batch_size=64, num_workers=1, drop_last=False,shuffle=False)
+predicted_list=[]
+
+with torch.no_grad():
+    model.eval()
+    for sparse_feature,dense_feature in test_loader:
+        sparse_feature,dense_feature=sparse_feature.to(device),dense_feature.to(device)
+        # print(sparse_feature.shape)
+        # print(dense_feature.shape)
+        output=model(sparse_feature,dense_feature)
+        # print(output.shape)
+        _, predicted = torch.max(output.data, 1)
+
+        # print(predicted.shape)
+        # print(predicted)
+        predicted_list=predicted_list+list(predicted.cpu().numpy())
+
+import pandas as pd
+df_pred = pd.DataFrame()
+aux = pd.read_csv(test_dir)
+df_pred['Id'] = aux['Id']
+df_pred['Cover_Type'] = [x+1 for x in predicted_list]
+df_pred.to_csv('./dcn.csv', index=False)
+print('fininshed...')
 plt.show()
 
 
