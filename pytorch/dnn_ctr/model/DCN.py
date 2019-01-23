@@ -30,10 +30,10 @@ from torch.autograd import Variable
 
 import torch.backends.cudnn
 
-
 """
     网络结构部分
 """
+
 
 class DCN(torch.nn.Module):
     """
@@ -67,14 +67,17 @@ class DCN(torch.nn.Module):
 
     Attention: only support logsitcs regression
     """
-    def __init__(self,field_size, feature_sizes, embedding_size = 4,
-                 h_depth = 2, deep_layers = [32, 32], is_deep_dropout = True, dropout_deep=[0.0, 0.5, 0.5],
-                 h_cross_depth = 3,
-                 h_inner_product_depth = 2, inner_product_layers = [32, 32], is_inner_product_dropout = True, dropout_inner_product_deep = [0.0, 0.5, 0.5],
-                 deep_layers_activation = 'relu', n_epochs = 64, batch_size = 256, learning_rate = 0.003,
-                 optimizer_type = 'adam', is_batch_norm = False, verbose = False, random_seed = 950104,
-                 use_cross = True, use_inner_product = False, use_deep = True,weight_decay = 0.0,loss_type = 'logloss', eval_metric = roc_auc_score,
-                 use_cuda = True, n_class = 1, greater_is_better = True
+
+    def __init__(self, field_size, feature_sizes, embedding_size=4,
+                 h_depth=2, deep_layers=[32, 32], is_deep_dropout=True, dropout_deep=[0.0, 0.5, 0.5],
+                 h_cross_depth=3,
+                 h_inner_product_depth=2, inner_product_layers=[32, 32], is_inner_product_dropout=True,
+                 dropout_inner_product_deep=[0.0, 0.5, 0.5],
+                 deep_layers_activation='relu', n_epochs=64, batch_size=256, learning_rate=0.003,
+                 optimizer_type='adam', is_batch_norm=False, verbose=False, random_seed=950104,
+                 use_cross=True, use_inner_product=False, use_deep=True, weight_decay=0.0, loss_type='logloss',
+                 eval_metric=roc_auc_score,
+                 use_cuda=True, n_class=1, greater_is_better=True
                  ):
         super(DCN, self).__init__()
         self.field_size = field_size
@@ -129,18 +132,20 @@ class DCN(torch.nn.Module):
             print("The model is (inner product network + deep network)")
         elif self.use_cross:
             print("The model is a cross network only")
-        # elif self.use_deep:
+            # elif self.use_deep:
             print("The model is a deep network only")
         elif self.use_inner_product:
             print("The model is an inner product network only")
         else:
-            print("You have to choose more than one of (cross network, deep network, inner product network) models to use")
+            print(
+                "You have to choose more than one of (cross network, deep network, inner product network) models to use")
             exit(1)
 
         """
             embeddings
         """
-        self.embeddings = nn.ModuleList([nn.Embedding(feature_size, self.embedding_size) for feature_size in self.feature_sizes])
+        self.embeddings = nn.ModuleList(
+            [nn.Embedding(feature_size, self.embedding_size) for feature_size in self.feature_sizes])
 
         cat_size = 0
         """
@@ -149,8 +154,8 @@ class DCN(torch.nn.Module):
         if self.use_cross:
             print("Init cross network")
             for i in range(self.h_cross_depth):
-                setattr(self, 'cross_weight_' + str(i+1),
-                        torch.nn.Parameter(torch.randn(self.field_size*self.embedding_size)))
+                setattr(self, 'cross_weight_' + str(i + 1),
+                        torch.nn.Parameter(torch.randn(self.field_size * self.embedding_size)))
                 setattr(self, 'cross_bias_' + str(i + 1),
                         torch.nn.Parameter(torch.randn(self.field_size * self.embedding_size)))
             print("Cross network finished")
@@ -163,18 +168,22 @@ class DCN(torch.nn.Module):
             print("Init inner product network")
             if self.is_inner_product_dropout:
                 self.inner_product_0_dropout = nn.Dropout(self.dropout_inner_product_deep[0])
-            self.inner_product_linear_1 = nn.Linear(self.field_size*(self.field_size-1)/2, self.inner_product_layers[0])
+            self.inner_product_linear_1 = nn.Linear(self.field_size * (self.field_size - 1) / 2,
+                                                    self.inner_product_layers[0])
             if self.is_inner_product_dropout:
                 self.inner_product_1_dropout = nn.Dropout(self.dropout_inner_product_deep[1])
             if self.is_batch_norm:
                 self.inner_product_batch_norm_1 = nn.BatchNorm1d(self.inner_product_layers[0])
 
             for i, h in enumerate(self.inner_product_layers[1:], 1):
-                setattr(self, 'inner_product_linear_' + str(i + 1), nn.Linear(self.inner_product_layers[i - 1], self.inner_product_layers[i]))
+                setattr(self, 'inner_product_linear_' + str(i + 1),
+                        nn.Linear(self.inner_product_layers[i - 1], self.inner_product_layers[i]))
                 if self.is_batch_norm:
-                    setattr(self, 'inner_product_batch_norm_' + str(i + 1), nn.BatchNorm1d(self.inner_product_layers[i]))
+                    setattr(self, 'inner_product_batch_norm_' + str(i + 1),
+                            nn.BatchNorm1d(self.inner_product_layers[i]))
                 if self.is_deep_dropout:
-                    setattr(self, 'inner_product_' + str(i + 1) + '_dropout', nn.Dropout(self.dropout_inner_product_deep[i + 1]))
+                    setattr(self, 'inner_product_' + str(i + 1) + '_dropout',
+                            nn.Dropout(self.dropout_inner_product_deep[i + 1]))
             cat_size += inner_product_layers[-1]
             print("Inner product network finished")
 
@@ -186,7 +195,7 @@ class DCN(torch.nn.Module):
 
             if self.is_deep_dropout:
                 self.linear_0_dropout = nn.Dropout(self.dropout_deep[0])
-            self.linear_1 = nn.Linear(self.embedding_size*self.field_size, deep_layers[0])
+            self.linear_1 = nn.Linear(self.embedding_size * self.field_size, deep_layers[0])
             if self.is_batch_norm:
                 self.batch_norm_1 = nn.BatchNorm1d(deep_layers[0])
             if self.is_deep_dropout:
@@ -200,7 +209,7 @@ class DCN(torch.nn.Module):
             cat_size += deep_layers[-1]
             print("Init deep part succeed")
 
-        self.last_layer = nn.Linear(cat_size,1)
+        self.last_layer = nn.Linear(cat_size, 1)
         print("Init succeed")
 
     def forward(self, Xi, Xv):
@@ -220,16 +229,17 @@ class DCN(torch.nn.Module):
         """
             embeddings
         """
-        emb_arr = [(torch.sum(emb(Xi[:,i,:]),1).t()*Xv[:,i]).t() for i, emb in enumerate(self.embeddings)]
+        emb_arr = [(torch.sum(emb(Xi[:, i, :]), 1).t() * Xv[:, i]).t() for i, emb in enumerate(self.embeddings)]
         outputs = []
         """
             cross part
         """
         if self.use_cross:
-            x_0 = torch.cat(emb_arr,1)
+            x_0 = torch.cat(emb_arr, 1)
             x_l = x_0
             for i in range(self.h_cross_depth):
-                x_l = torch.sum(x_0 * x_l, 1).view([-1,1]) * getattr(self,'cross_weight_'+str(i+1)).view([1,-1]) + getattr(self,'cross_bias_'+str(i+1)) + x_l
+                x_l = torch.sum(x_0 * x_l, 1).view([-1, 1]) * getattr(self, 'cross_weight_' + str(i + 1)).view(
+                    [1, -1]) + getattr(self, 'cross_bias_' + str(i + 1)) + x_l
             outputs.append(x_l)
 
         """
@@ -239,8 +249,8 @@ class DCN(torch.nn.Module):
             fm_wij_arr = []
             for i in range(self.field_size):
                 for j in range(i + 1, self.field_size):
-                    fm_wij_arr.append(torch.sum(emb_arr[i] * emb_arr[j],1).view([-1,1]))
-            inner_output = torch.cat(fm_wij_arr,1)
+                    fm_wij_arr.append(torch.sum(emb_arr[i] * emb_arr[j], 1).view([-1, 1]))
+            inner_output = torch.cat(fm_wij_arr, 1)
 
             if self.is_inner_product_dropout:
                 deep_emb = self.inner_product_0_dropout(inner_output)
@@ -263,7 +273,7 @@ class DCN(torch.nn.Module):
             deep part
         """
         if self.use_deep:
-            deep_emb = torch.cat(emb_arr,1)
+            deep_emb = torch.cat(emb_arr, 1)
 
             if self.is_deep_dropout:
                 deep_emb = self.linear_0_dropout(deep_emb)
@@ -285,12 +295,11 @@ class DCN(torch.nn.Module):
         """
             total
         """
-        output = self.last_layer(torch.cat(outputs,1))
-        return torch.sum(output,1)
-
+        output = self.last_layer(torch.cat(outputs, 1))
+        return torch.sum(output, 1)
 
     def fit(self, Xi_train, Xv_train, y_train, Xi_valid=None, Xv_valid=None,
-                y_valid = None, ealry_stopping=False, refit=False, save_path = None):
+            y_valid=None, ealry_stopping=False, refit=False, save_path=None):
         """
         :param Xi_train: [[ind1_1, ind1_2, ...], [ind2_1, ind2_2, ...], ..., [indi_1, indi_2, ..., indi_j, ...], ...]
                         indi_j is the feature index of feature field j of sample i in the training set
@@ -316,12 +325,12 @@ class DCN(torch.nn.Module):
         if self.verbose:
             print("pre_process data ing...")
         is_valid = False
-        Xi_train = np.array(Xi_train).reshape((-1,self.field_size,1))
+        Xi_train = np.array(Xi_train).reshape((-1, self.field_size, 1))
         Xv_train = np.array(Xv_train)
         y_train = np.array(y_train)
         x_size = Xi_train.shape[0]
         if Xi_valid:
-            Xi_valid = np.array(Xi_valid).reshape((-1,self.field_size,1))
+            Xi_valid = np.array(Xi_valid).reshape((-1, self.field_size, 1))
             Xv_valid = np.array(Xv_valid)
             y_valid = np.array(y_valid)
             x_valid_size = Xi_valid.shape[0]
@@ -351,9 +360,9 @@ class DCN(torch.nn.Module):
             batch_iter = x_size // self.batch_size
             epoch_begin_time = time()
             batch_begin_time = time()
-            for i in range(batch_iter+1):
-                offset = i*self.batch_size
-                end = min(x_size, offset+self.batch_size)
+            for i in range(batch_iter + 1):
+                offset = i * self.batch_size
+                end = min(x_size, offset + self.batch_size)
                 if offset == end:
                     break
                 batch_xi = Variable(torch.LongTensor(Xi_train[offset:end]))
@@ -372,28 +381,28 @@ class DCN(torch.nn.Module):
                     if i % 100 == 99:  # print every 100 mini-batches
                         eval = self.evaluate(batch_xi, batch_xv, batch_y)
                         print('[%d, %5d] loss: %.6f metric: %.6f time: %.1f s' %
-                              (epoch + 1, i + 1, total_loss/100.0, eval, time()-batch_begin_time))
+                              (epoch + 1, i + 1, total_loss / 100.0, eval, time() - batch_begin_time))
                         total_loss = 0.0
                         batch_begin_time = time()
 
-            train_loss, train_eval = self.eval_by_batch(Xi_train,Xv_train,y_train,x_size)
+            train_loss, train_eval = self.eval_by_batch(Xi_train, Xv_train, y_train, x_size)
             train_result.append(train_eval)
-            print('*'*50)
+            print('*' * 50)
             print('[%d] loss: %.6f metric: %.6f time: %.1f s' %
-                  (epoch + 1, train_loss, train_eval, time()-epoch_begin_time))
-            print('*'*50)
+                  (epoch + 1, train_loss, train_eval, time() - epoch_begin_time))
+            print('*' * 50)
 
             if is_valid:
                 valid_loss, valid_eval = self.eval_by_batch(Xi_valid, Xv_valid, y_valid, x_valid_size)
                 valid_result.append(valid_eval)
                 print('*' * 50)
                 print('[%d] loss: %.6f metric: %.6f time: %.1f s' %
-                      (epoch + 1, valid_loss, valid_eval,time()-epoch_begin_time))
+                      (epoch + 1, valid_loss, valid_eval, time() - epoch_begin_time))
                 print('*' * 50)
             if save_path:
-                torch.save(self.state_dict(),save_path)
+                torch.save(self.state_dict(), save_path)
             if is_valid and ealry_stopping and self.training_termination(valid_result):
-                print("early stop at [%d] epoch!" % (epoch+1))
+                print("early stop at [%d] epoch!" % (epoch + 1))
                 break
 
         # fit a few more epoch on train+valid until result reaches the best_train_score
@@ -405,11 +414,11 @@ class DCN(torch.nn.Module):
             else:
                 best_epoch = np.argmin(valid_result)
             best_train_score = train_result[best_epoch]
-            Xi_train = np.concatenate((Xi_train,Xi_valid))
-            Xv_train = np.concatenate((Xv_train,Xv_valid))
-            y_train = np.concatenate((y_train,y_valid))
+            Xi_train = np.concatenate((Xi_train, Xi_valid))
+            Xv_train = np.concatenate((Xv_train, Xv_valid))
+            y_train = np.concatenate((y_train, y_valid))
             x_size = x_size + x_valid_size
-            self.shuffle_in_unison_scary(Xi_train,Xv_train,y_train)
+            self.shuffle_in_unison_scary(Xi_train, Xv_train, y_train)
             for epoch in range(64):
                 batch_iter = x_size // self.batch_size
                 for i in range(batch_iter + 1):
@@ -430,21 +439,21 @@ class DCN(torch.nn.Module):
                 train_loss, train_eval = self.eval_by_batch(Xi_train, Xv_train, y_train, x_size)
                 if save_path:
                     torch.save(self.state_dict(), save_path)
-                if abs(best_train_score-train_eval) < 0.001 or \
+                if abs(best_train_score - train_eval) < 0.001 or \
                         (self.greater_is_better and train_eval > best_train_score) or \
                         ((not self.greater_is_better) and train_result < best_train_score):
                     break
             if self.verbose:
                 print("refit finished")
 
-    def eval_by_batch(self,Xi, Xv, y, x_size):
+    def eval_by_batch(self, Xi, Xv, y, x_size):
         total_loss = 0.0
         y_pred = []
         batch_size = 16384
         batch_iter = x_size // batch_size
         criterion = F.binary_cross_entropy_with_logits
         model = self.eval()
-        for i in range(batch_iter+1):
+        for i in range(batch_iter + 1):
             offset = i * batch_size
             end = min(x_size, offset + batch_size)
             if offset == end:
@@ -458,9 +467,9 @@ class DCN(torch.nn.Module):
             pred = F.sigmoid(outputs).cpu()
             y_pred.extend(pred.data.numpy())
             loss = criterion(outputs, batch_y)
-            total_loss += loss.data[0]*(end-offset)
-        total_metric = self.eval_metric(y,y_pred)
-        return total_loss/x_size, total_metric
+            total_loss += loss.data[0] * (end - offset)
+        total_metric = self.eval_metric(y, y_pred)
+        return total_loss / x_size, total_metric
 
     # shuffle three lists simutaneously
     def shuffle_in_unison_scary(self, a, b, c):
@@ -475,13 +484,13 @@ class DCN(torch.nn.Module):
         if len(valid_result) > 4:
             if self.greater_is_better:
                 if valid_result[-1] < valid_result[-2] and \
-                    valid_result[-2] < valid_result[-3] and \
-                    valid_result[-3] < valid_result[-4]:
+                        valid_result[-2] < valid_result[-3] and \
+                        valid_result[-3] < valid_result[-4]:
                     return True
             else:
                 if valid_result[-1] > valid_result[-2] and \
-                    valid_result[-2] > valid_result[-3] and \
-                    valid_result[-3] > valid_result[-4]:
+                        valid_result[-2] > valid_result[-3] and \
+                        valid_result[-3] > valid_result[-4]:
                     return True
         return False
 
@@ -491,7 +500,7 @@ class DCN(torch.nn.Module):
         :param Xv: the same as fit function
         :return: output, ont-dim array
         """
-        Xi = np.array(Xi).reshape((-1,self.field_size,1))
+        Xi = np.array(Xi).reshape((-1, self.field_size, 1))
         Xi = Variable(torch.LongTensor(Xi))
         Xv = Variable(torch.FloatTensor(Xv))
         if self.use_cuda and torch.cuda.is_available():
@@ -531,7 +540,6 @@ class DCN(torch.nn.Module):
         model = self.eval()
         pred = F.sigmoid(model(Xi, Xv)).cpu()
         return pred.data.numpy()
-
 
     def evaluate(self, Xi, Xv, y):
         """
