@@ -19,6 +19,7 @@ del data['Id']
 # 打乱数据
 data = data.sample(len(data))
 y = data.Cover_Type
+# X = data
 X = data.drop("Cover_Type", axis=1)
 
 # 划分训练集测试集
@@ -43,6 +44,7 @@ clf = XGBClassifier(
     seed=1024)  # 随机种子
 
 clf.fit(X_train_1, y_train_1)
+print(clf.feature_importances_)
 new_feature = clf.apply(X_train_2)
 
 X_train_new2 = mergeToOne(X_train_2, new_feature)
@@ -70,7 +72,6 @@ y_pro = model.predict_proba(X_test)[:, 1]
 
 # print("AUC Score :", (metrics.roc_auc_score(y_test, y_pro)))
 print("Accuracy :", (metrics.accuracy_score(y_test, y_pre)))
-
 
 model = XGBClassifier(
     learning_rate=0.05,  # 默认0.3
