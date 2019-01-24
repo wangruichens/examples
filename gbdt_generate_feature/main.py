@@ -30,7 +30,7 @@ X_train_1, X_train_2, y_train_1, y_train_2 = train_test_split(X_train, y_train, 
 
 clf = XGBClassifier(
     learning_rate=0.2,  # 默认0.3
-    n_estimators=1,  # 树的个数
+    n_estimators=1,  # 树的个数, 多类问题，每个类都会生成一个树，这里有7个类，所以会有7棵树
     max_depth=3,
     min_child_weight=10,
     gamma=0.5,
