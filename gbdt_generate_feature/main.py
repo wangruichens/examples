@@ -30,8 +30,8 @@ X_train_1, X_train_2, y_train_1, y_train_2 = train_test_split(X_train, y_train, 
 
 clf = XGBClassifier(
     learning_rate=0.2,  # 默认0.3
-    n_estimators=200,  # 树的个数
-    max_depth=8,
+    n_estimators=1,  # 树的个数
+    max_depth=3,
     min_child_weight=10,
     gamma=0.5,
     subsample=0.75,
@@ -44,9 +44,25 @@ clf = XGBClassifier(
     seed=1024)  # 随机种子
 
 clf.fit(X_train_1, y_train_1)
-print(clf.feature_importances_)
+# print(clf.feature_importances_)
 new_feature = clf.apply(X_train_2)
+new_y=clf.predict_proba(X_train_2)
 
+
+from xgboost import plot_tree,plot_importance
+import matplotlib.pyplot as plt
+import matplotlib
+plot_tree(clf,num_trees=0)
+fig = matplotlib.pyplot.gcf()
+fig.set_size_inches(50, 50)
+fig.savefig('tree3.png')
+
+# plot_importance(clf)
+# fig = matplotlib.pyplot.gcf()
+# fig.set_size_inches(50, 50)
+# fig.savefig('importance.png')
+
+'''
 X_train_new2 = mergeToOne(X_train_2, new_feature)
 new_feature_test = clf.apply(X_test)
 X_test_new = mergeToOne(X_test, new_feature_test)
@@ -68,7 +84,7 @@ model = XGBClassifier(
 
 model.fit(X_train_2, y_train_2)
 y_pre = model.predict(X_test)
-y_pro = model.predict_proba(X_test)[:, 1]
+# y_pro = model.predict_proba(X_test)[:, 1]
 
 # print("AUC Score :", (metrics.roc_auc_score(y_test, y_pro)))
 print("Accuracy :", (metrics.accuracy_score(y_test, y_pre)))
@@ -90,6 +106,7 @@ model = XGBClassifier(
 
 model.fit(X_train_new2, y_train_2)
 y_pre = model.predict(X_test_new)
-y_pro = model.predict_proba(X_test_new)[:, 1]
+# y_pro = model.predict_proba(X_test_new)[:, 1]
 # print("AUC Score :", (metrics.roc_auc_score(y_test, y_pro)))
 print("Accuracy :", (metrics.accuracy_score(y_test, y_pre)))
+'''

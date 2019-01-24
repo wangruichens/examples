@@ -7,17 +7,20 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics import mean_squared_error
 from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
 
 # load or create your dataset
 print('Load data...')
-df_train = pd.read_csv('../train.txt', header=None, sep=' ')
-df_test = pd.read_csv('../test.txt', header=None, sep=' ')
 
+data = pd.read_csv("train.csv")
+del data['Id']
+#  shuffle
+data = data.sample(len(data))
+y = data.Cover_Type-1
+# X = data
+X = data.drop("Cover_Type", axis=1)
 
-y_train = df_train[0]  # training label
-y_test = df_test[0]   # testing label
-X_train = df_train.drop(0, axis=1)  # training dataset
-X_test = df_test.drop(0, axis=1)  # testing dataset
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=0)  ##test_size测试集合所占比例
 
 # create dataset for lightgbm
 lgb_train = lgb.Dataset(X_train, y_train)
@@ -27,8 +30,9 @@ lgb_eval = lgb.Dataset(X_test, y_test, reference=lgb_train)
 params = {
     'task': 'train',
     'boosting_type': 'gbdt',
-    'objective': 'binary',
-    'metric': {'binary_logloss'},
+    'num_class':7,
+    'objective': 'multiclass',
+    'metric': {'multi_logloss'},
     'num_leaves': 63,
 	'num_trees': 100,
     'learning_rate': 0.01,
