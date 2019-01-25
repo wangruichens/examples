@@ -3,8 +3,8 @@
 Collection of machine learning / deep learning examples.
 ## Keywords
 
-*Recsys
-*Kaggle prediction example
+* Recsys
+* Kaggle prediction example
 *Classification & Regression
 *VAE
 *GAN
