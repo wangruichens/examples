@@ -1,3 +1,11 @@
 # Examples
 
-Collection of machine learning / deep learning examples, which include mlp,gan,vae. Also include some tensorflow examples about estimator, eager execuation, pytorch basis etc...
+Collection of machine learning / deep learning examples.
+## Keywords
+
+*Recsys
+*Kaggle prediction example
+*Classification & Regression
+*VAE
+*GAN
+*Simple mnist/cifar10 demo
