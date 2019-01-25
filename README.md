@@ -5,7 +5,7 @@ Collection of machine learning / deep learning examples.
 
 * Recsys
 * Kaggle prediction example
-*Classification & Regression
-*VAE
-*GAN
-*Simple mnist/cifar10 demo
+* Classification & Regression
+* VAE
+* GAN
+* Simple mnist/cifar10 demo
