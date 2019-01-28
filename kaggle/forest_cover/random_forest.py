@@ -10,6 +10,7 @@ if __name__ == "__main__":
     df_test = pd.read_csv(loc_test)
 
     feature_cols = [col for col in df_train.columns if col not in ['Cover_Type', 'Id']]
+    print(len(feature_cols))
 
     X_train = df_train[feature_cols]
     X_test = df_test[feature_cols]
