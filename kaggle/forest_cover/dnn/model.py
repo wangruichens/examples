@@ -3,11 +3,6 @@ import numpy as np
 print(tf.VERSION)
 print(tf.keras.__version__)
 
-model = tf.keras.Sequential()
-# Adds a densely-connected layer with 64 units to the model:
-model.add(tf.keras.layers.Dense(64, activation='relu'))
-# Add a softmax layer with 10 output units:
-model.add(tf.keras.layers.Dense(2, activation='softmax'))
 
 def main():
     filename = 'train.tfrecord'
@@ -53,7 +48,7 @@ def main():
     # Don't forget to specify `steps_per_epoch` when calling `fit` on a dataset.
     iterator = dataset.make_one_shot_iterator()
     x, y = iterator.get_next()
-    model.fit(x=x,y=y, epochs=1,steps_per_epoch=10000)
+    model.fit(x=x,y=y, epochs=1,steps_per_epoch=100000)
 
 
     # tf.keras.models.save_model(model,'keras_model',overwrite=True)
