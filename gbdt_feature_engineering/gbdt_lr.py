@@ -20,7 +20,7 @@ y = data.Cover_Type-1
 # X = data
 X = data.drop("Cover_Type", axis=1)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=0)  ##test_size测试集合所占比例
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=0)
 
 # create dataset for lightgbm
 lgb_train = lgb.Dataset(X_train, y_train)
@@ -34,7 +34,7 @@ params = {
     'objective': 'multiclass',
     'metric': {'multi_logloss'},
     'num_leaves': 63,
-	'num_trees': 100,
+	'num_trees': 200,
     'learning_rate': 0.01,
     'feature_fraction': 0.9,
     'bagging_fraction': 0.8,

@@ -34,7 +34,7 @@ X_train_1, X_train_2, y_train_1, y_train_2 = train_test_split(X_train, y_train, 
 clf = XGBClassifier(
     learning_rate=0.2,  # 默认0.3
     n_estimators=1,  # 树的个数, 多类问题，每个类都会生成一个树，这里有7个类，所以会有7棵树
-    max_depth=3,
+    max_depth=5,
     min_child_weight=10,
     gamma=0.5,
     subsample=0.75,
@@ -48,17 +48,22 @@ clf = XGBClassifier(
 
 clf.fit(X_train_1, y_train_1)
 # print(clf.feature_importances_)
+
 new_feature = clf.apply(X_train_2)
 new_y=clf.predict_proba(X_train_2)
+y_pre = clf.predict(X_train_1)
+# y_pro = model.predict_proba(X_test_new)[:, 1]
+# print("AUC Score :", (metrics.roc_auc_score(y_test, y_pro)))
+print("Accuracy :", (metrics.accuracy_score(y_train_1, y_pre)))
 
-
-from xgboost import plot_tree,plot_importance
-import matplotlib.pyplot as plt
-import matplotlib
-plot_tree(clf,num_trees=0)
-fig = matplotlib.pyplot.gcf()
-fig.set_size_inches(50, 50)
-fig.savefig('tree3.png')
+#
+# from xgboost import plot_tree,plot_importance
+# import matplotlib.pyplot as plt
+# import matplotlib
+# plot_tree(clf,num_trees=0)
+# fig = matplotlib.pyplot.gcf()
+# fig.set_size_inches(50, 50)
+# fig.savefig('tree3.png')
 
 # plot_importance(clf)
 # fig = matplotlib.pyplot.gcf()
