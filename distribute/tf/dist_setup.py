@@ -11,8 +11,8 @@ log_dir = '/logdir'
 def main():
     # Distributed Baggage
     cluster = tf.train.ClusterSpec({
-        'ps': ['localhost:2822'],
-        'worker': ['localhost:2823']
+        'ps': ['172.16.0.102:2822'],
+        'worker': ['172.17.20.206:2823']
     })  # lets this node know about all other nodes
     if FLAGS.job_name == 'ps':  # checks if parameter server
         server = tf.train.Server(cluster,
@@ -38,9 +38,14 @@ def main():
 
         # Session
         # Monitored Training Session
+
+        config = tf.ConfigProto()
+        config.gpu_options.per_process_gpu_memory_fraction = 0.4
+
         sess = tf.train.MonitoredTrainingSession(
             master=server.target,
-            is_chief=is_chief)
+            is_chief=is_chief,
+        config=config)
         for i in range(100):
             if sess.should_stop(): break
             sess.run(opt)
