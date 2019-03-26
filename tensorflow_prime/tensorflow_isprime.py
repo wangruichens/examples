@@ -31,7 +31,7 @@ def to_bin(x,bins=20):
     return [int(b) for b in str]
 
 pos=[]
-lens=150000
+lens=300000
 for n in primes():
     if n<lens:
        pos.append(n)
@@ -46,7 +46,8 @@ data_y=[]
 primenum=0
 while n <lens:
     if n < p:
-        if np.random.uniform(0, 1) > 0.9:
+        # if all input data are not even, then the DNN can not find any pattern
+        if np.random.uniform(0, 1) > 0.8 and n%2 !=0 :
             data_x.append(to_bin(n))
             data_y.append(0.0)
     if n==p:
@@ -57,6 +58,7 @@ while n <lens:
             p=pos.pop(0)
         else:
             p=lens+1
+
     n+=1
 
 # Another case : determin odd or even
@@ -120,18 +122,18 @@ with tf.device('/cpu:0'):
 # model = tf.keras.utils.multi_gpu_model(model, gpus=2)
 
 
-model.compile(optimizer=tf.train.AdamOptimizer(0.001),
+model.compile(optimizer=tf.train.AdamOptimizer(0.01),
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
 model.summary()
-model.fit(x_train, y_train, epochs=20, batch_size=2048)
+model.fit(x_train, y_train, epochs=50, batch_size=2048)
 
 acc= model.evaluate(x_test, y_test, batch_size=2048)
 print('testing acc:',acc[1])
 
-
-val_x=[234500,300000,500000,666666,199933,199961,199967,199999]
+# Conclusion : IMPOSSIBLE to use DNN to predict prime ... of course
+val_x=[300009,500005,333333,666666,499957,499969,499973,499979]
 val=[]
 for x in val_x:
     val.append(to_bin(x))

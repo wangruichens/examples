@@ -19,8 +19,9 @@ def to_bin(x,bins=20):
     str=bin(x)[2:].zfill(bins)
     return [int(b) for b in str]
 
-
-lens=200000
+import time
+start_time = time.time()
+lens=500000
 with open('prime.txt','w') as f:
     for n in primes():
         if n<lens:
@@ -29,4 +30,4 @@ with open('prime.txt','w') as f:
         else:
             break
     f.close()
-print('finished')
+print('finished... time: ',time.time() - start_time)
