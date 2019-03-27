@@ -1,6 +1,8 @@
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 import numpy as np
+from tensorflow.python.keras.callbacks import TensorBoard
+from time import time
 
 def get_available_gpus():
     local_device_protos = device_lib.list_local_devices()
@@ -121,15 +123,16 @@ with tf.device('/cpu:0'):
 # Multi gpu is very easy using keras
 # model = tf.keras.utils.multi_gpu_model(model, gpus=2)
 
+tensorboard=TensorBoard(log_dir='logs/{}'.format(time()))
 
-model.compile(optimizer=tf.train.AdamOptimizer(0.01),
+model.compile(optimizer=tf.train.AdamOptimizer(0.0005),
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
 model.summary()
-model.fit(x_train, y_train, epochs=50, batch_size=2048)
+model.fit(x_train, y_train, epochs=3000, batch_size=4096,callbacks=[tensorboard])
 
-acc= model.evaluate(x_test, y_test, batch_size=2048)
+acc= model.evaluate(x_test, y_test, batch_size=4096)
 print('testing acc:',acc[1])
 
 # Conclusion : IMPOSSIBLE to use DNN to predict prime ... of course
@@ -142,3 +145,4 @@ val=np.array(val)
 res=model.predict(val)
 for x,y in zip(val_x,res):
     print(x,' probability of prime:',y[1])
+7
