@@ -33,7 +33,7 @@ def to_bin(x,bins=20):
     return [int(b) for b in str]
 
 pos=[]
-lens=300000
+lens=200000
 for n in primes():
     if n<lens:
        pos.append(n)
@@ -130,9 +130,20 @@ model.compile(optimizer=tf.train.AdamOptimizer(0.0005),
               metrics=['accuracy'])
 
 model.summary()
-model.fit(x_train, y_train, epochs=3000, batch_size=4096,callbacks=[tensorboard])
 
-acc= model.evaluate(x_test, y_test, batch_size=4096)
+
+
+
+dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
+dataset_train = dataset.batch(1024).repeat()
+
+
+dataset_test=tf.data.Dataset.from_tensor_slices((x_test, y_test))
+dataset_test=dataset_test.batch(1024).repeat()
+
+model.fit(dataset_train, epochs=100, steps_per_epoch=50,callbacks=[tensorboard])
+
+acc= model.evaluate(dataset_test,steps=50)
 print('testing acc:',acc[1])
 
 # Conclusion : IMPOSSIBLE to use DNN to predict prime ... of course
@@ -145,4 +156,3 @@ val=np.array(val)
 res=model.predict(val)
 for x,y in zip(val_x,res):
     print(x,' probability of prime:',y[1])
-7
