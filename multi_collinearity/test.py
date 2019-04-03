@@ -23,8 +23,7 @@ print(y.shape)
 
 with tf.device('/cpu:0'):
     inputs=layers.Input(shape=(2,))
-    # x=layers.Dense(2)(inputs)
-    out=layers.Dense(1)(inputs)
+    out=layers.Dense(1,use_bias=False,kernel_initializer=initializers.RandomUniform())(inputs)
     model=Model(inputs=inputs,outputs=out)
 
 
@@ -32,12 +31,12 @@ dataset=tf.data.Dataset.from_tensor_slices((x,y)).batch(3).repeat()
 
 # print(dataset.take(1))
 
-model.compile(optimizer=tf.train.GradientDescentOptimizer(learning_rate=0.001),loss='mean_squared_error')
+model.compile(optimizer=tf.train.GradientDescentOptimizer(learning_rate=0.0001),loss='mean_squared_error')
 
-print_weights = callbacks.LambdaCallback(on_epoch_end=lambda batch, logs: print('\n',model.layers[1].get_weights()))
+print_weights = callbacks.LambdaCallback(on_epoch_end=lambda batch, logs: print(model.layers[1].get_weights()))
 
 
 model.summary()
-# model.fit(dataset,epochs=3,steps_per_epoch=20,callbacks=[print_weights])
-model.fit(dataset,epochs=20,steps_per_epoch=1)
+model.fit(dataset,epochs=20,steps_per_epoch=1,callbacks=[print_weights])
+# model.fit(dataset,epochs=20,steps_per_epoch=1)
 
