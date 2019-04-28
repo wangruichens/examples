@@ -22,26 +22,35 @@ def main():
         server = tf.train.Server(cluster, job_name="worker", task_index=FLAGS.task_index)
 
         # Graph
-        with tf.device('/cpu:0'):
+        with tf.device(tf.train.replica_device_setter(
+                worker_device="/job:worker/task:0",
+                cluster=cluster)):
             a = tf.Variable(tf.truncated_normal(shape=[2]), dtype=tf.float32)
             b = tf.Variable(tf.truncated_normal(shape=[2]), dtype=tf.float32)
             c = a + b
 
-            target = tf.constant(100., shape=[2], dtype=tf.float32)
+            target = tf.constant(50., shape=[2], dtype=tf.float32)
             loss = tf.reduce_mean(tf.square(c - target))
-
-            opt = tf.train.GradientDescentOptimizer(.01).minimize(loss)
+            global_step = tf.train.get_or_create_global_step()
+            opt = tf.train.GradientDescentOptimizer(.01).minimize(loss,global_step=global_step)
 
         # Session
         # Supervisor
-        sv = tf.train.Supervisor(logdir=os.getcwd() + log_dir, is_chief=is_chief, save_model_secs=30)
-        sess = sv.prepare_or_wait_for_session(server.target)
-        for i in range(100):
-            if sv.should_stop(): break
-            sess.run(opt)
-            if i % 10 == 0:
-                r = sess.run(c)
-                print(r)
+        hooks = [tf.train.StopAtStepHook(last_step=1000000)]
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        config.gpu_options.per_process_gpu_memory_fraction=0.5
+
+        with tf.train.MonitoredTrainingSession(master=server.target,
+                                               is_chief=is_chief,
+                                               checkpoint_dir="/tmp/train_logs",
+                                               hooks=hooks,config=config) as mon_sess:
+            for i in range(10000):
+                if mon_sess.should_stop(): break
+                mon_sess.run(opt)
+                if i % 10 == 0:
+                    res = mon_sess.run(c)
+                    print(res)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
