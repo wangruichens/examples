@@ -61,7 +61,7 @@ if __name__ == '__main__':
         default="",
         help="One of 'ps', 'worker'"
     )
-    # Flags for defining the tf.train.Server
+     # Flags for defining the tf.train.Server
     parser.add_argument(
         "--task_index",
         type=int,
