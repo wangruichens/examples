@@ -1,0 +1,34 @@
+介绍如何根据利用spark生成tfrecord & 从tensorflow读取hdfs上的tfrecord文件
+
+1. 利用spark生成tfrecord
+参考：
+https://github.com/tensorflow/ecosystem/tree/master/spark/spark-tensorflow-connector
+
+mvn clean install -DnewVersion=1.11.0 -Dspark.version=2.3.0
+
+测试用例可能有一些跑不通。 可以跳过： mvn clean install -Dmaven.test.skip=true
+
+将打好的jar包附在命令后面，测试是否成功 pyspark --jars target/spark-tensorflow-connector_2.11-1.10.0.jar
+最后将jar包拷到目标环境上就可以了。
+
+2. 从tensorflow读取hdfs上的tfrecord文件
+参考TensorFlow on Hadoop：
+https://github.com/tensorflow/examples/blob/master/community/en/docs/deploy/hadoop.md
+
+问题一： libhdfs.so 没有的话，需要下载hadoop源码进行编译。 cmake -> make
+/hadoop-2.7.1-src/hadoop-hdfs-project/hadoop-hdfs/src
+成功之后，会在目录下生成Makefile文件，接下来就可以执行make编译生成libhdfs.so和libhdfs.a了 (target目录)。
+
+生成之后拷到server目录下。
+
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/amd64/server
+
+
+问题二： 报错loadFileSystems error:
+(unable to get stack trace for java.lang.NoClassDefFoundError exception: ExceptionUtils::getStackTrace error.)
+
+原因是CLASSPATH 没有设置。 需要包含hadoop相关的所有jar包。
+export HADOOP_HOME=/home/wangrc/hadoop-2.7.3
+export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
+
+然后 tensorflow 就能够从集群的tfrecord上读取数据了 ：—）
