@@ -31,4 +31,4 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/amd64/server
 export HADOOP_HOME=/home/wangrc/hadoop-2.7.3
 export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
 
-然后 tensorflow 就能够从集群的tfrecord上读取数据了 ：—）
+然后 tensorflow 就能够从集群的tfrecord上读取数据了
