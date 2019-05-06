@@ -1,6 +1,6 @@
 #生成tfrecord
 from pyspark.sql.types import *
-path = "test-output.tfrecord"
+path = "test1.tfrecord"
 fields = [StructField("id", IntegerType()), StructField("IntegerCol", IntegerType()),
           StructField("LongCol", LongType()), StructField("FloatCol", FloatType()),
           StructField("DoubleCol", DoubleType()), StructField("VectorCol", ArrayType(DoubleType(), True)),
@@ -15,18 +15,16 @@ df.show()
 
 
 
-
-
 #tensorflow 读取tfrecord
 import tensorflow as tf
 tf.enable_eager_execution()
-raw_dataset = tf.data.TFRecordDataset(['hdfs://cluster/user/wangrc/tfrecord_test/part-r-00000'])
+raw_dataset = tf.data.TFRecordDataset(['hdfs://cluster/user/wangrc/test2.tfrecord/part-r-00000'])
 for raw_record in raw_dataset.take(2):
     print(repr(raw_record))
 
 
 import tensorflow as tf
-record_iterator = tf.python_io.tf_record_iterator(path='hdfs://cluster/user/wangrc/tfrecord_test/part-r-00000')
+record_iterator = tf.python_io.tf_record_iterator(path='hdfs://cluster/user/wangrc/test1.tfrecord/part-r-00000')
 for string_record in record_iterator:
     example = tf.train.Example()
     example.ParseFromString(string_record)

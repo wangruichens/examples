@@ -10,6 +10,7 @@ mvn clean install -DnewVersion=1.11.0 -Dspark.version=2.3.0
 
 将打好的jar包附在命令后面，测试是否成功 pyspark --jars target/spark-tensorflow-connector_2.11-1.10.0.jar
 最后将jar包拷到目标环境上就可以了。
+/usr/hdp/2.6.5.0-292/spark2/jars/spark-tensorflow-connector_2.11-1.11.0.jar
 
 2. 从tensorflow读取hdfs上的tfrecord文件
 参考TensorFlow on Hadoop：
@@ -33,6 +34,13 @@ export HADOOP_HOME=/home/wangrc/hadoop-2.7.3
 export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
 
 然后 tensorflow 就能够从集群的tfrecord上读取数据了
+
+
+总结：
+需要export 三个变量 ：
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/amd64/server
+export HADOOP_HOME=/home/wangrc/hadoop-2.7.3
+export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
 
 
 sever A无需密码ssh sever B:
