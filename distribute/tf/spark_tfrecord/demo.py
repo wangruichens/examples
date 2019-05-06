@@ -9,7 +9,7 @@ schema = StructType(fields)
 test_rows = [[11, 1, 23, 10.0, 14.0, [1.0, 2.0], "r1"], [21, 2, 24, 12.0, 15.0, [2.0, 2.0], "r2"]]
 rdd = spark.sparkContext.parallelize(test_rows)
 df = spark.createDataFrame(rdd, schema)
-df.write.format("tfrecords").option("recordType", "Example").save(path)
+df.repartition(1).write.format("tfrecords").option("recordType", "Example").save(path)
 df = spark.read.format("tfrecords").option("recordType", "Example").load(path)
 df.show()
 

@@ -28,7 +28,14 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/amd64/server
 (unable to get stack trace for java.lang.NoClassDefFoundError exception: ExceptionUtils::getStackTrace error.)
 
 原因是CLASSPATH 没有设置。 需要包含hadoop相关的所有jar包。
+
 export HADOOP_HOME=/home/wangrc/hadoop-2.7.3
 export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
 
 然后 tensorflow 就能够从集群的tfrecord上读取数据了
+
+
+sever A无需密码ssh sever B:
+scp .ssh/id_rsa.pub wangrc@192.168.1.1:/home/wangrc/id_rsa.pub
+cat id_rsa.pub >> .ssh/authorized_keys
+sudo chmod 600 .ssh/authorized_keys
