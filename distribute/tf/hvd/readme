@@ -14,7 +14,6 @@ scp -r openmpi-4.0.1 wangrc@172.17.19.139:/home/wangrc
 *(
 完成后需要添加环境变量到.bashrc：
 export PATH="$PATH:/usr/local/openmpi/bin"
-
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/openmpi/lib/"
 完成后执行
 sudo ldconfig
@@ -43,7 +42,7 @@ https://github.com/horovod/horovod/issues/656
 
 原因是因为conda和系统自带的gcc版本不同
 
-$ pip uninstall -y horovod
+$
 $ conda install gcc_linux-64 gxx_linux-64
 
 CC=/opt/anaconda3/bin/x86_64-conda_cos6-linux-gnu-gcc
@@ -56,7 +55,6 @@ $ [flags] pip install --no-cache-dir -i  https://pypi.tuna.tsinghua.edu.cn/simpl
 
 import tensorflow as tf
 import horovod.tensorflow as hvd
-
 
 def fn(magic_number):
     import horovod.torch as hvd
