@@ -2,7 +2,6 @@
 source /etc/profile
 export HADOOP_HOME=/tmp/wangrc/hadoop-2.7.3
 export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
-
 spark-submit \
 --master yarn \
 --conf spark.network.timeout=600 \

@@ -7,9 +7,6 @@ import argparse
 from pyspark.sql import SparkSession
 import tensorflow as tf
 from tensorflow.python.client import device_lib
-import numpy as np
-from tensorflow.python.keras.callbacks import TensorBoard
-from time import time
 
 def get_available_gpus():
     local_device_protos = device_lib.list_local_devices()
@@ -35,7 +32,7 @@ def df_to_hive(spark, df, table_name):
 
 def main(args):
     print(get_available_gpus())
-
+    gpu_num=len(get_available_gpus())
     ss = SparkSession.builder \
         .appName("train_from_tfrecord") \
         .enableHiveSupport() \
@@ -74,7 +71,8 @@ def main(args):
     predictions = tf.keras.layers.Dense(10, activation='softmax')(x)
     model = tf.keras.Model(inputs=inputs, outputs=predictions)
 
-
+    if gpu_num>1:
+        model = tf.keras.utils.multi_gpu_model(model, gpus=gpu_num)
     model.compile(optimizer=tf.train.AdamOptimizer(0.001),
                   loss='sparse_categorical_crossentropy',
                   metrics=['sparse_categorical_accuracy'])
