@@ -8,7 +8,7 @@ mvn clean install -DnewVersion=1.11.0 -Dspark.version=2.3.0
 
 测试用例可能有一些跑不通。 可以跳过： mvn clean install -Dmaven.test.skip=true
 
-将打好的jar包附在命令后面，测试是否成功 pyspark --jars target/spark-tensorflow-connector_2.11-1.10.0.jar
+将打好的jar包附在命令后面，测试是否成功 pyspark --jars target/spark-tensorflow-connector_2.11-1.11.0.jar
 最后将jar包拷到目标环境上就可以了。
 /usr/hdp/2.6.5.0-292/spark2/jars/spark-tensorflow-connector_2.11-1.11.0.jar
 
@@ -35,12 +35,20 @@ export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
 
 然后 tensorflow 就能够从集群的tfrecord上读取数据了
 
+*一个坑：
+写在shell脚本里的 $(${HADOOP_HOME}/bin/hadoop classpath --glob)。
+glob命令在terminal交互的情况下是可以生效的，但是写在shell脚本里是不生效的。在测试环境中，echo $CLASSPATH 仍然为空。
+解决：
+权限问题，yarn服务不能访问之前设置的hadoop home, 也就是/home/wangrc目录
+
 
 总结：
 需要export 三个变量 ：
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/amd64/server
 export HADOOP_HOME=/home/wangrc/hadoop-2.7.3
 export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
+
+
 
 
 sever A无需密码ssh sever B:
