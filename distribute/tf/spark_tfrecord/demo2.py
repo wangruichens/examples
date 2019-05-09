@@ -1,10 +1,11 @@
+# df.repartition(1).write.format("tfrecords").option("recordType", "Example").save(path)
 # ss = SparkSession.builder \
 #     .appName("train") \
 #     .enableHiveSupport() \
 #     .getOrCreate()
 # df=ss.sql('select * from mlg.g_tfrecord_test')
 
-path='hdfs://cluster/user/wangrc/test.tfrecord/part-r-0000'
+path='hdfs://cluster/user/wangrc/test1.tfrecord/part-r-0000'
 filenames=[]
 for i in range(10):
     filenames.append(path+str(i))
@@ -14,7 +15,9 @@ print(filenames)
 import tensorflow as tf
 tf.enable_eager_execution()
 
-raw_dataset = tf.data.TFRecordDataset(filenames)
+
+path='hdfs://cluster/user/wangrc/test1.tfrecord/part-r-00000'
+raw_dataset = tf.data.TFRecordDataset(path)
 for raw_record in raw_dataset.take(2):
     print(repr(raw_record))
 
@@ -34,7 +37,7 @@ def _parse_function(example_proto):
 
 dataset = raw_dataset.map(_parse_function)
 
-for p in dataset.take(10):
+for p in dataset.take(2):
     print(repr(p))
 
 
