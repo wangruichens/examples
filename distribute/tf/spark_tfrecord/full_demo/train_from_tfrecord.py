@@ -8,6 +8,7 @@ from pyspark.sql import SparkSession
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
+
 def get_available_gpus():
     local_device_protos = device_lib.list_local_devices()
     return [x.name for x in local_device_protos if x.device_type == 'GPU']
@@ -78,7 +79,7 @@ def main(args):
                   metrics=['sparse_categorical_accuracy'])
     model.summary()
     model.fit(dataset, epochs=10, steps_per_epoch=100)
-
+    tf.keras.backend.clear_session()
 
 if __name__ == '__main__':
 
