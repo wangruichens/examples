@@ -43,9 +43,11 @@ glob命令在terminal交互的情况下是可以生效的，但是写在shell脚
 
 
 总结：
+添加jar包
+/usr/hdp/2.6.5.0-292/spark2/jars/spark-tensorflow-connector_2.11-1.11.0.jar
 需要export 三个变量 ：
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/amd64/server
-export HADOOP_HOME=/home/wangrc/hadoop-2.7.3
+export HADOOP_HOME=/tmp/wangrc/hadoop-2.7.3
 export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
 
 
