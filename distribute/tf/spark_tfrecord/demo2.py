@@ -9,18 +9,19 @@ tf.enable_eager_execution()
 ################## generate dataframe ########################
 #生成tfrecord
 from pyspark.sql.types import *
-path = "test1.tfrecord"
+path = "test.tfrecord"
+ss = SparkSession.builder \
+    .appName("hive_to_tfrecord") \
+    .enableHiveSupport() \
+    .getOrCreate()
 fields = [StructField("id", IntegerType()), StructField("IntegerCol", IntegerType()),
           StructField("LongCol", LongType()), StructField("FloatCol", FloatType()),
           StructField("DoubleCol", DoubleType()), StructField("VectorCol", ArrayType(DoubleType(), True)),
           StructField("StringCol", StringType())]
 schema = StructType(fields)
 test_rows = [[11, 1, 23, 10.0, 14.0, [1.0, 2.0], "r1"], [21, 2, 24, 12.0, 15.0, [2.0, 2.0], "r2"]]
-rdd = spark.sparkContext.parallelize(test_rows)
-df = spark.createDataFrame(rdd, schema)
-df.repartition(10).write.format("tfrecords").option("recordType", "Example").save(path)
-df = spark.read.format("tfrecords").option("recordType", "Example").load(path)
-df.show()
+rdd = ss.sparkContext.parallelize(test_rows)
+df = ss.createDataFrame(rdd, schema)
 
 ####################load dataframe#########################
 ss = SparkSession.builder \
@@ -32,9 +33,8 @@ df=ss.sql('select * from mlg.g_tfrecord_test')
 
 ####################save dataframe to tfrecord #########################
 folder='test.tfrecord'
-path='hdfs://cluster/user/wangrc/test.tfrecord/part-r-00000'
 df.repartition(1).write.format("tfrecords").mode("overwrite").option("recordType", "Example").save(folder)
-
+path='hdfs://cluster/user/wangrc/test.tfrecord/part-r-00000'
 
 ####################load tfrecord to dataframe #########################
 df = ss.read.format("tfrecords").option("recordType", "Example").load(path)

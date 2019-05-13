@@ -41,6 +41,12 @@ glob命令在terminal交互的情况下是可以生效的，但是写在shell脚
 解决：
 权限问题，yarn服务不能访问之前设置的hadoop home, 也就是/home/wangrc目录
 
+*线上环境 一个坑
+tensorflow现在默认安装 gpu版本。 如果机器上没有nvidia显卡，就会报错libcuda.so.1找不到。
+需要conda重新安装 ，指定cpu版本
+conda search tensorflow
+conda install 'tensorflow=1.11*=mkl*'
+
 
 总结：
 添加jar包
@@ -50,7 +56,7 @@ glob命令在terminal交互的情况下是可以生效的，但是写在shell脚
 
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/amd64/server
 
-export HADOOP_HOME=/tmp/wangrc/hadoop-2.7.3
+export HADOOP_HOME=/opt/data/hadoop-2.7.3
 export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
 
 

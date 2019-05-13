@@ -6,6 +6,7 @@
 import argparse
 from pyspark.sql import SparkSession
 import tensorflow as tf
+tf.enable_eager_execution()
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -25,37 +26,34 @@ def df_to_hive(spark, df, table_name):
 
 def main(args):
 
+    path = 'hdfs://cluster/user/mlg/test.tfrecord/part-r-00000'
+    record_iterator = tf.python_io.tf_record_iterator(path=path)
 
-
-    ss = SparkSession.builder \
-        .appName("train_from_tfrecord") \
-        .enableHiveSupport() \
-        .getOrCreate()
-
-    path = 'hdfs://cluster/user/wangrc/mnist.tfrecord/train/part-r-0000'
-    filenames = []
-    for i in range(10):
-        filenames.append(path + str(i))
-
-    # raw_dataset = tf.data.TFRecordDataset(filenames)
-
-    record_iterator = tf.python_io.tf_record_iterator(path='hdfs://cluster/user/wangrc/test1.tfrecord/part-r-00000')
+    print ('################################ TEST BEGIN ################################')
     for string_record in record_iterator:
         example = tf.train.Example()
         example.ParseFromString(string_record)
         print(example)
+    print ('################################ TEST END ################################')
+    raw_dataset = tf.data.TFRecordDataset(path)
 
-    #
-    # feature_description = {
-    #     'label': tf.FixedLenFeature([], tf.int64),
-    #     'features': tf.FixedLenFeature((784), tf.int64),
-    #     }
-    #
-    # def _parse_function(example_proto):
-    #   return tf.parse_single_example(example_proto, feature_description)
-    #
-    # dataset = raw_dataset.map(_parse_function)
+    def _parse_function(example_proto):
+        feature_description = {
+            'id': tf.FixedLenFeature([], tf.int64, default_value=0),
+            'IntegerCol': tf.FixedLenFeature([], tf.int64, default_value=0),
+            'LongCol': tf.FixedLenFeature([], tf.int64, default_value=0),
+            'FloatCol': tf.FixedLenFeature([], tf.float32, default_value=0.0),
+            'DoubleCol': tf.FixedLenFeature([], tf.float32, default_value=0.0),
+            'VectorCol': tf.FixedLenFeature((2), tf.float32, default_value=[0, 0]),
+            'StringCol': tf.FixedLenFeature([], tf.string, default_value=''),
+        }
+        return tf.parse_single_example(example_proto, feature_description)
 
+    dataset = raw_dataset.map(_parse_function)
+    print ('################################ TEST BEGIN ################################')
+    for p in dataset.take(2):
+        print(repr(p))
+    print ('################################ TEST END ################################')
 
 if __name__ == '__main__':
     args = parse_args()
