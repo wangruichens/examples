@@ -2,7 +2,7 @@
 
 1. 利用spark生成tfrecord
 参考：
-https://github.com/tensorflow/ecosystem/tree/master/spark/spark-tensorflow-connector
+f
 
 mvn clean install -DnewVersion=1.11.0 -Dspark.version=2.3.0
 

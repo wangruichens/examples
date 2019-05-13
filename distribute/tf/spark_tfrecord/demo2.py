@@ -5,6 +5,23 @@ import tensorflow as tf
 from pyspark.sql import SparkSession
 tf.enable_eager_execution()
 
+
+################## generate dataframe ########################
+#生成tfrecord
+from pyspark.sql.types import *
+path = "test1.tfrecord"
+fields = [StructField("id", IntegerType()), StructField("IntegerCol", IntegerType()),
+          StructField("LongCol", LongType()), StructField("FloatCol", FloatType()),
+          StructField("DoubleCol", DoubleType()), StructField("VectorCol", ArrayType(DoubleType(), True)),
+          StructField("StringCol", StringType())]
+schema = StructType(fields)
+test_rows = [[11, 1, 23, 10.0, 14.0, [1.0, 2.0], "r1"], [21, 2, 24, 12.0, 15.0, [2.0, 2.0], "r2"]]
+rdd = spark.sparkContext.parallelize(test_rows)
+df = spark.createDataFrame(rdd, schema)
+df.repartition(10).write.format("tfrecords").option("recordType", "Example").save(path)
+df = spark.read.format("tfrecords").option("recordType", "Example").load(path)
+df.show()
+
 ####################load dataframe#########################
 ss = SparkSession.builder \
     .appName("train") \
