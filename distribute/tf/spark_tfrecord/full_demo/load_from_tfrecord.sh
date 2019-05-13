@@ -1,6 +1,6 @@
 #!/bin/bash
 source /etc/profile
-export HADOOP_HOME=/tmp/wangrc/hadoop-2.7.3
+export HADOOP_HOME=/home/wangrc/hadoop-2.7.3
 export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
 
 spark-submit \
