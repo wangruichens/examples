@@ -46,6 +46,8 @@ tensorflow现在默认安装 gpu版本。 如果机器上没有nvidia显卡，�
 需要conda重新安装 ，指定cpu版本
 conda search tensorflow
 conda install 'tensorflow=1.11*=mkl*'
+升级tensorflow
+conda install tensorflow=1.13
 
 
 总结：
