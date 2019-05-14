@@ -57,9 +57,10 @@ glob命令在terminal交互的情况下是可以生效的，但是写在shell脚
 tensorflow现在默认安装 gpu版本。 如果机器上没有nvidia显卡，就会报错libcuda.so.1找不到。
 需要conda重新安装 ，指定cpu版本
 conda search tensorflow
-conda install 'tensorflow=1.11*=mkl*'
-升级tensorflow
-conda install tensorflow=1.13
+
+升级tensorflow, 可以指定 cpu 或者 gpu 版本
+conda install 'tensorflow=1.13*=mkl*'
+conda install 'tensorflow=1.13*=gpu*'
 
 
 总结：
