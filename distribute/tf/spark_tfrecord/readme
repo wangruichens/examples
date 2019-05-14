@@ -2,9 +2,21 @@
 
 1. 利用spark生成tfrecord
 参考：
-f
+https://github.com/tensorflow/ecosystem/tree/master/spark/spark-tensorflow-connector
 
-mvn clean install -DnewVersion=1.11.0 -Dspark.version=2.3.0
+
+# Build TensorFlow Hadoop
+cd ../../hadoop
+mvn versions:set -DnewVersion=1.13.1
+mvn clean install
+
+# Build Spark TensorFlow connector
+cd ../spark/spark-tensorflow-connector
+mvn versions:set -DnewVersion=1.13.1
+mvn clean install
+
+
+mvn clean install -Dmaven.test.skip=true -DnewVersion=1.13.0 -Dspark.version=2.3.0
 
 测试用例可能有一些跑不通。 可以跳过： mvn clean install -Dmaven.test.skip=true
 
