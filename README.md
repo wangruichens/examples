@@ -1,7 +1,7 @@
-# Examples
+# Samples
 
-Collection of machine learning / deep learning examples.
-## Keywords
+Collection of machine learning / deep learning notes.
+## 笔记 & 示例
 
 * [Distribute training using tensorlfow,spark](https://github.com/wangruichens/samples/tree/master/distribute/tf/spark_tfrecord)
 * [TF serving](https://github.com/wangruichens/samples/tree/master/distribute/tf/serving)
