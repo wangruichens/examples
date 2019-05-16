@@ -52,8 +52,8 @@ export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
 
 写在shell脚本里的 $(${HADOOP_HOME}/bin/hadoop classpath --glob)。
 glob命令在terminal交互的情况下是可以生效的，但是写在shell脚本里是不生效的。在测试环境中，echo $CLASSPATH 仍然为空。
-解决：
-权限问题，yarn服务不能访问之前设置的hadoop home, 也就是/home/wangrc目录
+
+解决：权限问题，yarn服务不能访问之前设置的hadoop home, 也就是/home/wangrc目录
 
 * 线上环境 第一个坑
 
