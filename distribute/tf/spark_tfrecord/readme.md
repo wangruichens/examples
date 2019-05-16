@@ -1,16 +1,16 @@
 介绍如何根据利用spark生成tfrecord & 从tensorflow读取hdfs上的tfrecord文件
 
-1. 利用spark生成tfrecord
+# 1. 利用spark生成tfrecord
 参考：
 https://github.com/tensorflow/ecosystem/tree/master/spark/spark-tensorflow-connector
 
 
-# Build TensorFlow Hadoop
+### Build TensorFlow Hadoop
 cd ../../hadoop
 mvn versions:set -DnewVersion=1.13.1
 mvn clean install
 
-# Build Spark TensorFlow connector
+### Build Spark TensorFlow connector
 cd ../spark/spark-tensorflow-connector
 mvn versions:set -DnewVersion=1.13.1
 mvn clean install
@@ -24,7 +24,7 @@ mvn clean install -Dmaven.test.skip=true -DnewVersion=1.13.0 -Dspark.version=2.3
 最后将jar包拷到目标环境上就可以了。
 /usr/hdp/2.6.5.0-292/spark2/jars/spark-tensorflow-connector_2.11-1.11.0.jar
 
-2. 从tensorflow读取hdfs上的tfrecord文件
+# 2. 从tensorflow读取hdfs上的tfrecord文件
 参考TensorFlow on Hadoop：
 https://github.com/tensorflow/examples/blob/master/community/en/docs/deploy/hadoop.md
 
@@ -47,13 +47,15 @@ export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
 
 然后 tensorflow 就能够从集群的tfrecord上读取数据了
 
-*一个坑：
+* 一个坑：
+
 写在shell脚本里的 $(${HADOOP_HOME}/bin/hadoop classpath --glob)。
 glob命令在terminal交互的情况下是可以生效的，但是写在shell脚本里是不生效的。在测试环境中，echo $CLASSPATH 仍然为空。
 解决：
 权限问题，yarn服务不能访问之前设置的hadoop home, 也就是/home/wangrc目录
 
-*线上环境 一个坑
+* 线上环境 第一个坑
+
 tensorflow现在默认安装 gpu版本。 如果机器上没有nvidia显卡，就会报错libcuda.so.1找不到。
 需要conda重新安装 ，指定cpu版本
 conda search tensorflow
@@ -62,10 +64,21 @@ conda search tensorflow
 conda install 'tensorflow=1.13*=mkl*'
 conda install 'tensorflow=1.13*=gpu*'
 
+* 线上环境 第二个坑
 
-总结：
-添加jar包
+线上需要找到相关的class path，这个是通过线上spark2通过打包生成的。
+在主节点的本地目录添加jar包以后，还需要重启spark2服务。
+确认打包重新生成，新加入的jar包被添加进去。
+
+
+
+
 -------------------------------------------------------------------------------------------
+总结：
+
+-------------------------------------------------------------------------------------------
+添加jar包
+
 /usr/hdp/2.6.5.0-292/spark2/jars/spark-tensorflow-connector_2.11-1.11.0.jar
 需要export 三个变量 ：
 
