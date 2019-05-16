@@ -1,4 +1,7 @@
-介绍如何根据利用spark生成tfrecord & 从tensorflow读取hdfs上的tfrecord文件
+* 介绍如何根据利用spark生成tfrecord 
+* 从tensorflow读取hdfs上的tfrecord文件 
+* ooize 调用 tensorflow 训练
+
 ![image](https://github.com/wangruichens/samples/tree/master/distribute/tf/spark_tfrecord/done.png)
 
 # 1. 利用spark生成tfrecord
