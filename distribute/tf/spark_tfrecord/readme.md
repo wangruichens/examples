@@ -74,10 +74,9 @@ conda install 'tensorflow=1.13*=gpu*'
 
 
 -------------------------------------------------------------------------------------------
-总结：
-
+#总结：
 -------------------------------------------------------------------------------------------
-添加jar包
+###添加jar包
 
 /usr/hdp/2.6.5.0-292/spark2/jars/spark-tensorflow-connector_2.11-1.11.0.jar
 需要export 三个变量 ：
@@ -88,21 +87,19 @@ export HADOOP_HOME=/opt/data/hadoop-2.7.3
 export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
 
 
--------------------------------------------------------------------------------------------
-1.放置jar包spark-tensorflow-connector_2.11-1.11.0.jar到找定目录位置
+####1.放置jar包spark-tensorflow-connector_2.11-1.11.0.jar到找定目录位置
  本地位置: /usr/hdp/2.6.5.0-292/spark2/jars/spark-tensorflow-connector_2.11-1.11.0.jar
  ooize集群： /user/oozie/share/lib/lib_20180712144755/spark2
 
-2.拷贝libhdfs.so，放在${JAVA_HOME}/jre/lib/amd64/server目录下， 在/etc/profile文件末尾添加环境变量
+####2.拷贝libhdfs.so，放在${JAVA_HOME}/jre/lib/amd64/server目录下， 在/etc/profile文件末尾添加环境变量
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/amd64/server
 source /etc/profile
 
-3.将hadoop-2.7.3 文件夹放在/opt/data目录下，所有人可读可写
+####3.将hadoop-2.7.3 文件夹放在/opt/data目录下，所有人可读可写
 sudo chmod -R 777 /opt/data/hadoop-2.7.3
 
 
-
-
+-------------------------------------------------------------------------------------------
 sever A无需密码ssh sever B:
 scp .ssh/id_rsa.pub wangrc@192.168.1.1:/home/wangrc/id_rsa.pub
 cat id_rsa.pub >> .ssh/authorized_keys
