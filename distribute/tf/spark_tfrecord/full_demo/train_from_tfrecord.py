@@ -7,7 +7,7 @@ import argparse
 from pyspark.sql import SparkSession
 import tensorflow as tf
 from tensorflow.python.client import device_lib
-
+from tensorflow import keras
 
 def get_available_gpus():
     local_device_protos = device_lib.list_local_devices()
@@ -34,10 +34,6 @@ def df_to_hive(spark, df, table_name):
 def main(args):
     print(get_available_gpus())
     gpu_num=len(get_available_gpus())
-    ss = SparkSession.builder \
-        .appName("train_from_tfrecord") \
-        .enableHiveSupport() \
-        .getOrCreate()
 
     path = 'hdfs://cluster/user/wangrc/mnist.tfrecord/train/part-r-0000'
     filenames = []
@@ -62,24 +58,37 @@ def main(args):
     # for p in dataset.take(1):
     #     print(repr(p))
 
-    inputs = tf.keras.layers.Input(shape=(28,28,1))
-    x = tf.keras.layers.Conv2D(64, (3, 3), activation='relu')(inputs)
-    x = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(x)
-    x = tf.keras.layers.Dropout(0.5)(x)
-    x = tf.keras.layers.Flatten()(x)
-    x = tf.keras.layers.Dense(128, activation='relu')(x)
-    x = tf.keras.layers.Dropout(0.5)(x)
-    predictions = tf.keras.layers.Dense(10, activation='softmax')(x)
-    model = tf.keras.Model(inputs=inputs, outputs=predictions)
+    inputs = keras.layers.Input(shape=(28,28,1))
+    x = keras.layers.Conv2D(64, (3, 3), activation='relu')(inputs)
+    x = keras.layers.MaxPooling2D(pool_size=(2, 2))(x)
+    x = keras.layers.Dropout(0.5)(x)
+    x = keras.layers.Flatten()(x)
+    x = keras.layers.Dense(128, activation='relu')(x)
+    x = keras.layers.Dropout(0.5)(x)
+    predictions = keras.layers.Dense(10, activation='softmax')(x)
+    model = keras.Model(inputs=inputs, outputs=predictions)
 
     if gpu_num>1:
-        model = tf.keras.utils.multi_gpu_model(model, gpus=gpu_num)
+        model = keras.utils.multi_gpu_model(model, gpus=gpu_num)
     model.compile(optimizer=tf.train.AdamOptimizer(0.001),
                   loss='sparse_categorical_crossentropy',
                   metrics=['sparse_categorical_accuracy'])
     model.summary()
     model.fit(dataset, epochs=10, steps_per_epoch=100)
-    tf.keras.backend.clear_session()
+
+    # Save it in SavedModel format for tf Serving.
+
+    export_path = 'hdfs://cluster/user/wangrc/mnist_model_for_serving'
+
+    tf.saved_model.simple_save(
+        keras.backend.get_session(),
+        export_path,
+        inputs={'input_image': model.input},
+        outputs={t.name: t for t in model.outputs})
+
+    print('\nmodel saved')    
+    keras.backend.clear_session()
+    
 
 if __name__ == '__main__':
 
