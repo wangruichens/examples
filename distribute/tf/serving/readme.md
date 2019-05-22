@@ -31,7 +31,7 @@ tf serving:
 ## 方案2： 模型Serving & 同步 from 美团blog
 [参考链接](https://gitbook.cn/books/5b3adc411166b9562e9af3f6/index.html)
 
-### 训练：tfrecord存放在hdfs上
+### 训练：tfrecord存放在hdfs上 （训练时拉取到本地）
 ### 预测：线上预估方案
 
 - 模型同步
@@ -77,7 +77,7 @@ sudo service docker start
 sudo service docker stop
 ```
 
-#### 2、使用训练好的model, 使用hdfs tfrecord数据训练的手写数字识别model. 具体可以参考[这里](https://github.com/wangruichens/samples/tree/master/distribute/tf/spark_tfrecord)
+#### 2、使用训练好的model, 使用hdfs上tfrecord数据训练的手写数字识别model. 具体参见我之前的[配置](https://github.com/wangruichens/samples/tree/master/distribute/tf/spark_tfrecord)
 
 模型很简单，参数量大概138w. 通过hdfs上的tfrecord来训练，模型文件保存在hdfs上
 
