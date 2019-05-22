@@ -34,9 +34,11 @@ tf serving:
 [参考链接](https://gitbook.cn/books/5b3adc411166b9562e9af3f6/index.html)
 
 tfrecord存放在hdfs上：
+
 ![image](https://github.com/wangruichens/samples/blob/master/distribute/tf/serving/meituan1.png)
 
 线上预估方案：
+
 ![image](https://github.com/wangruichens/samples/blob/master/distribute/tf/serving/meituan2.png)
 
 

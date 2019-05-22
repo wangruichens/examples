@@ -2,7 +2,7 @@
 
 [tensorflow-spark-tfrecord-gpu training](https://github.com/wangruichens/samples/tree/master/distribute/tf/spark_tfrecord)
 
-[tensorlfow serving + flink + beam](https://github.com/wangruichens/samples/tree/master/distribute/tf/serving)
+[tensorlfow serving solutions](https://github.com/wangruichens/samples/tree/master/distribute/tf/serving)
 
 [uber tensorflow horovod](https://github.com/wangruichens/samples/tree/master/distribute/tf/hvd)
 
