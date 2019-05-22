@@ -35,7 +35,7 @@ json_response = requests.post('http://localhost:8501/v1/models/mnist/versions/1:
 print(json_response.text)
 predictions = json.loads(json_response.text)['predictions']
 elapsed = (time() - start)
-print("Time used:",elapsed* 1000)
+print("Time used:{0}ms".format(round(elapsed* 1000,2)) )
 
 
 show(rando, 'predict: {} , actually: {} '.format(

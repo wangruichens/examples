@@ -17,11 +17,10 @@ tf serving:
 
 4、serving the model
 
-
 # 一些解决方案：
+---
 
 ## 方案1： yarn 3.1+ ： 
----
 可以支持docker_image, [还不能提供稳定性保障](https://hadoop.apache.org/docs/r3.1.1/hadoop-yarn/hadoop-yarn-site/DockerContainers.html)
 
 ![image](https://github.com/wangruichens/samples/blob/master/distribute/tf/serving/serving.png)
@@ -30,11 +29,10 @@ tf serving:
 
 
 ## 方案2： 模型Serving & 同步 from 美团blog
----
 [参考链接](https://gitbook.cn/books/5b3adc411166b9562e9af3f6/index.html)
 
 ### 训练：tfrecord存放在hdfs上
-### 预测：线上预估方案：
+### 预测：线上预估方案
 
 - 模型同步
 
@@ -60,7 +58,7 @@ tf serving:
 
 ### 训练： 实现细节在[这里](https://github.com/wangruichens/samples/tree/master/distribute/tf/spark_tfrecord)
 
-### 预测：线上预估方案：
+### 预测：线上预估方案
 
 1、prerequisit： 安装docker
 
@@ -68,7 +66,7 @@ tf serving:
 ```
 # 1: 安装相关软件
 sudo yum install -y yum-utils device-mapper-persistent-data lvm2
-# 2: 添加软件源信息
+# 2: 添加软件源信息 (阿里镜像)
 sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 # 3: 更新并安装 Docker-CE
 sudo yum makecache fast
@@ -81,12 +79,78 @@ sudo service docker stop
 
 2、使用训练好的model, 使用hdfs tfrecord数据训练的手写数字识别model. 具体可以参考[这里](https://github.com/wangruichens/samples/tree/master/distribute/tf/spark_tfrecord)
 
-模型很简单，参数量大概138w.
+模型很简单，参数量大概138w. 通过hdfs上的tfrecord来训练，模型文件保存在hdfs上
 
 ![image](https://github.com/wangruichens/samples/blob/master/distribute/tf/serving/model_des.png)
 
+3、docker启动tf serving, 拉取hdfs model 到本地并加载模型
 
-# Centos 7 + tf serving + GPU without Docker
+[参考链接](https://www.tensorflow.org/tfx/serving/docker#serving_with_docker)
+
+模型保存后的文件路径：
+
+```
+test_serving 
+└───mnist_model_for_serving
+│   └───1
+│       │   variables
+│       │   saved_model.pb
+```
+可以到模型目录/1/下查看模型输入输出：
+```
+saved_model_cli show --dir . --all
+
+MetaGraphDef with tag-set: 'serve' contains the following SignatureDefs:
+
+signature_def['serving_default']:
+  The given SavedModel SignatureDef contains the following input(s):
+    inputs['input_image'] tensor_info:
+        dtype: DT_FLOAT
+        shape: (-1, 28, 28, 1)
+        name: Conv1_input:0
+  The given SavedModel SignatureDef contains the following output(s):
+    outputs['Softmax/Softmax:0'] tensor_info:
+        dtype: DT_FLOAT
+        shape: (-1, 10)
+        name: Softmax/Softmax:0
+  Method name is: tensorflow/serving/predict
+
+```
+docker 启动服务：
+
+```
+# For gRpc，默认端口8500
+docker run -p 8500:8500 --mount type=bind,source=/home/wangrc/test_serving/mnist_model_for_serving,target=/models/mnist -e MODEL_NAME=mnist -t tensorflow/serving
+
+# For REST, 默认端口8501
+docker run -p 8501:8501 --mount type=bind,source=/home/wangrc/test_serving/mnist_model_for_serving,target=/models/mnist -e MODEL_NAME=mnist -t tensorflow/serving
+```
+当然也可以都启用这两个端口，-p 8500:8500 -p 8501:8501，也可以添加一些自己的config, 细节参考官方文档。
+
+实际在模型中执行的命令是：
+```
+tensorflow_model_server --port=8500 --rest_api_port=8501 \
+  --model_name=my_model --model_base_path=/models/my_model
+```
+
+服务启动，模型成功加载：
+
+![image](https://github.com/wangruichens/samples/blob/master/distribute/tf/serving/serving2.png)
+
+查看端口占用和服务状态：
+```
+sudo netstat -nap | grep 8501
+curl http://localhost:8501/v1/models/mnist
+```
+
+使用REST测试模型结果：
+```
+python ./demo2/make_request.py
+```
+![image](https://github.com/wangruichens/samples/blob/master/distribute/tf/serving/res.png)
+
+
+## 方案4： Centos 7 + tf serving + GPU without Docker
 
 愿意踩坑的可以自己使用bazel编译：[参考链接](https://www.dearcodes.com/index.php/archives/25/)
 
