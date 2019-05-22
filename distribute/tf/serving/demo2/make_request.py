@@ -1,3 +1,9 @@
+##############################
+#
+# call tfserving using REST API demo
+#
+##############################
+
 from matplotlib import pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
