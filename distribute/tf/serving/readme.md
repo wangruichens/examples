@@ -20,7 +20,7 @@ tf serving:
 
 # 一些解决方案：
 
-### yarn 3.1+ ： 
+## 方案1： yarn 3.1+ ： 
 ---
 可以支持docker_image, [还不能提供稳定性保障](https://hadoop.apache.org/docs/r3.1.1/hadoop-yarn/hadoop-yarn-site/DockerContainers.html)
 
@@ -29,7 +29,7 @@ tf serving:
 [Docker+GPU support + tf serving + hadoop 3.1](https://community.hortonworks.com/articles/231660/tensorflow-serving-function-as-a-service-faas-with.html)
 
 
-# 模型Serving & 同步 from 美团blog
+## 方案2： 模型Serving & 同步 from 美团blog
 ---
 [参考链接](https://gitbook.cn/books/5b3adc411166b9562e9af3f6/index.html)
 
@@ -56,7 +56,7 @@ tf serving:
 
 
 
-# Centos 7 + docker + tfserving (当前使用方案)
+## 方案3： Centos 7 + docker + tfserving (当前使用方案)
 
 ### 训练： 实现细节在[这里](https://github.com/wangruichens/samples/tree/master/distribute/tf/spark_tfrecord)
 
