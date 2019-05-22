@@ -1,6 +1,6 @@
 # 工程上实现分布式训练的一些方案
 
-[tensorflow，spark，hdfs, tfrecord，gpu](https://github.com/wangruichens/samples/tree/master/distribute/tf/spark_tfrecord)
+[tensorflow & spark & hdfs 集群优雅调用](https://github.com/wangruichens/samples/tree/master/distribute/tf/spark_tfrecord)
 
 [TF Serving 介绍、部署和Demo](https://github.com/wangruichens/samples/tree/master/distribute/tf/serving)
 
