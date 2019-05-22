@@ -1,10 +1,10 @@
 # 工程上实现分布式训练的一些方案
 
-[tensorflow-spark-tfrecord-gpu training](https://github.com/wangruichens/samples/tree/master/distribute/tf/spark_tfrecord)
+[tensorflow，spark，hdfs, tfrecord，gpu](https://github.com/wangruichens/samples/tree/master/distribute/tf/spark_tfrecord)
 
-[tensorlfow serving solutions](https://github.com/wangruichens/samples/tree/master/distribute/tf/serving)
+[TF Serving 介绍、部署和Demo](https://github.com/wangruichens/samples/tree/master/distribute/tf/serving)
 
-[uber tensorflow horovod](https://github.com/wangruichens/samples/tree/master/distribute/tf/hvd)
+[uber tensorflow horovod 踩坑](https://github.com/wangruichens/samples/tree/master/distribute/tf/hvd)
 
 [docker tensorflow nvidia cuda](https://github.com/wangruichens/samples/tree/master/distribute/tf/docker)
 
