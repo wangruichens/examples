@@ -60,7 +60,7 @@ tf serving:
 
 ### 预测：线上预估方案
 
-1、prerequisit： 安装docker
+#### 1、prerequisit： 安装docker
 
 使用tfserving的docker版本。不想去踩编译和GPU功能拓展的坑。 
 ```
@@ -77,13 +77,13 @@ sudo service docker start
 sudo service docker stop
 ```
 
-2、使用训练好的model, 使用hdfs tfrecord数据训练的手写数字识别model. 具体可以参考[这里](https://github.com/wangruichens/samples/tree/master/distribute/tf/spark_tfrecord)
+#### 2、使用训练好的model, 使用hdfs tfrecord数据训练的手写数字识别model. 具体可以参考[这里](https://github.com/wangruichens/samples/tree/master/distribute/tf/spark_tfrecord)
 
 模型很简单，参数量大概138w. 通过hdfs上的tfrecord来训练，模型文件保存在hdfs上
 
 ![image](https://github.com/wangruichens/samples/blob/master/distribute/tf/serving/model_des.png)
 
-3、docker启动tf serving, 拉取hdfs model 到本地并加载模型
+#### 3、docker启动tf serving, 拉取hdfs model 到本地并加载模型
 
 [参考链接](https://www.tensorflow.org/tfx/serving/docker#serving_with_docker)
 
@@ -143,7 +143,7 @@ sudo netstat -nap | grep 8501
 curl http://localhost:8501/v1/models/mnist
 ```
 
-使用REST测试模型结果：
+#### 4、使用REST测试模型结果（线上采用gRpc）：
 ```
 python ./demo2/make_request.py
 ```
