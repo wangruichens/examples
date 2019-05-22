@@ -1,8 +1,5 @@
-# TFX tfserving 学习和部署
+# TF Serving 介绍、部署和Demo
 ---
-![image](https://github.com/wangruichens/samples/blob/master/distribute/tf/serving/arch.png)
-
-train model and save ->running service -> make request
 
 tf serving:
 支持模型热更新
@@ -16,30 +13,57 @@ tf serving:
 
 2、sub sample一部分数据，选择一个模型，预训练初始参数，交叉验证
 
-3、使用全部数据集，分布式训练， 多机多卡
+3、使用全部数据集，spark to tfrecord 使用单机读取hdfs数据训练 or 多机多卡分布式训练
 
 4、serving the model
 
-### yarn 3.0+ 目标：
-- packaging
-- gpu isolation
-    - 多线程容易OOM
-- easy shared FS(hdfs) access
-- job tracking
-- easy to deploy
 
+# 一些解决方案：
+
+### yarn 3.1+ ： 
+---
+可以支持docker_image, [还不能提供稳定性保障](https://hadoop.apache.org/docs/r3.1.1/hadoop-yarn/hadoop-yarn-site/DockerContainers.html)
 
 ![image](https://github.com/wangruichens/samples/blob/master/distribute/tf/serving/serving.png)
+
 [Docker+GPU support + tf serving + hadoop 3.1](https://community.hortonworks.com/articles/231660/tensorflow-serving-function-as-a-service-faas-with.html)
 
 
-# 模型同步 from 美团blog
+# 模型Serving & 同步 from 美团blog
 ---
-我们开发了一个高可用的同步组件：用户只需要提供线下训练好的模型的 HDFS 路径，该组件会自动同步到线上服务机器上。该组件基于 HTTPFS 实现，它是美团离线计算组提供的 HDFS 的 HTTP 方式访问接口。同步过程如下：
+[参考链接](https://gitbook.cn/books/5b3adc411166b9562e9af3f6/index.html)
 
-- 同步前，检查模型 md5 文件，只有该文件更新了，才需要同步。
-- 同步时，随机链接 HTTPFS 机器并限制下载速度。
-- 同步后，校验模型文件 md5 值并备份旧模型。
+tfrecord存放在hdfs上：
+![image](https://github.com/wangruichens/samples/blob/master/distribute/tf/serving/meituan1.png)
 
-同步过程中，如果发生错误或者超时，都会触发报警并重试。依赖这一组件，我们实现了在 2min 内可靠的将模型文件同步到线上。
+线上预估方案：
+![image](https://github.com/wangruichens/samples/blob/master/distribute/tf/serving/meituan2.png)
 
+
+
+# Centos 7 + docker + tfserving (当前使用方案)
+
+1、prerequisit： 安装docker 
+```
+# 1: 安装相关软件
+sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+# 2: 添加软件源信息
+sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+# 3: 更新并安装 Docker-CE
+sudo yum makecache fast
+sudo yum -y install docker-ce
+# 4: 开启Docker服务
+sudo service docker start
+# 5: 关闭Docker服务
+sudo service docker stop
+```
+2、使用训练好的model, 使用hdfs tfrecord数据训练的手写数字识别model. 具体可以参考[这里](https://github.com/wangruichens/samples/tree/master/distribute/tf/spark_tfrecord)
+
+模型很简单，参数量大概138w.
+
+![image](https://github.com/wangruichens/samples/blob/master/distribute/tf/serving/model_des.png)
+
+
+# Centos 7 + tf serving + GPU without Docker
+
+[参考链接](https://www.dearcodes.com/index.php/archives/25/)
