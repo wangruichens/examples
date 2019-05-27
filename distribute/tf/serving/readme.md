@@ -154,3 +154,5 @@ python ./demo2/make_request.py
 
 愿意踩坑的可以自己使用bazel编译：[参考链接](https://www.dearcodes.com/index.php/archives/25/)
 
+# tf serving 使用nginx部署负载均衡 
+[这里](https://github.com/wangruichens/samples/tree/master/distribute/tf/serving/serving_nginx)

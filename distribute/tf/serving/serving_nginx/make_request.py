@@ -37,7 +37,7 @@ print('Data: {} ... {}'.format(data[:50], data[len(data)-52:]))
 import requests
 headers = {"content-type": "application/json"}
 start = time()
-json_response = requests.post('http://localhost:8501/v1/models/mnist/versions/1:predict', data=data, headers=headers)
+json_response = requests.post('http://ha05:8255/v1/models/mnist/versions/1:predict', data=data, headers=headers)
 print(json_response.text)
 predictions = json.loads(json_response.text)['predictions']
 elapsed = (time() - start)
