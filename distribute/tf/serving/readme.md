@@ -156,3 +156,13 @@ python ./demo2/make_request.py
 
 # tf serving 使用nginx部署负载均衡 
 [这里](https://github.com/wangruichens/samples/tree/master/distribute/tf/serving/serving_nginx)
+
+# 主要问题：
+
+tensorflow serving nginx 单个服务还能管理。当服务多起来，或者有服务间交互调用等问题时，再使用nginx config来管理就不现实了。需要一套类似spring cloud 的微服务框架。 而tf serving 只有python api， 并没有办法注册到spring cloud 来管理。
+
+虽然tensorflow serving用于生产环境部署训练好的模型，但需要自己实现集群功能和健康检查，同时和java应用中间还隔着一个网络通讯的开销。所以最好还是java应用内部直接调用模型。python构建并训练模型+java在线预测还是比较合理的方案。
+
+对于tensorflow来说，模型上线一般选择tensorflow serving或者client API库来上线，前者适合于较大的模型和应用场景，后者则适合中小型的模型和应用场景。因此算法工程师使用在产品之前需要做好选择和评估。
+
+最合适的方案还是:k8s+docker。容器即服务的概念
