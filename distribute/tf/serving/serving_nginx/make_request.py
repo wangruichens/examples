@@ -39,7 +39,7 @@ def test_post():
     # print('Data: {} ... {}'.format(data[:50], data[len(data)-52:]))
     headers = {"content-type": "application/json"}
     start = time()
-    json_response = requests.post('http://ha05:8255/v1/models/mnist/versions/1:predict', data=data, headers=headers)
+    json_response = requests.post('http://algorithmsdemo.2345.cn/v1/models/mnist/versions/1:predict', data=data, headers=headers)
     elapsed = (time() - start)
     # print(json_response.text)
     # predictions = json.loads(json_response.text)['predictions']

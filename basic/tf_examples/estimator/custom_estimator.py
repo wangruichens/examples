@@ -1,6 +1,7 @@
 import argparse
 import tensorflow as tf
 import iris_data
+tf.enable_eager_execution()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--batch_size', default=100, type=int, help='batch size')
@@ -76,7 +77,7 @@ def main(argv):
         my_feature_columns.append(tf.feature_column.numeric_column(key=key))
 
     my_checkpoint_config = tf.estimator.RunConfig(
-        save_checkpoints_secs=20*60,
+        save_checkpoints_secs=20 * 60,
         keep_checkpoint_max=5,
     )
     classifier = tf.estimator.Estimator(
@@ -114,7 +115,7 @@ def main(argv):
     for pred_dict, expec in zip(predictions, expected):
         class_id = pred_dict['class_ids'][0]
         probability = pred_dict['probabilities'][class_id]
-        print(template.format(SPECIES[class_id], 100*probability, expec))
+        print(template.format(SPECIES[class_id], 100 * probability, expec))
 
 
 if __name__ == '__main__':
