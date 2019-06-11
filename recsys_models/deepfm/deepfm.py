@@ -12,10 +12,14 @@ tf.app.flags.DEFINE_integer("embedding_size", 32, "Embedding size")
 tf.app.flags.DEFINE_float("learning_rate", 0.001, "Learning rate")
 tf.app.flags.DEFINE_float("dropout", 0.5, "Dropout rate")
 tf.app.flags.DEFINE_string("task_type", 'train', "Task type {train, infer, eval, export}")
-tf.app.flags.DEFINE_integer("num_epochs", 10, "Number of epochs")
+tf.app.flags.DEFINE_integer("num_epochs", 1, "Number of epochs")
 tf.app.flags.DEFINE_integer("batch_size", 256, "Number of batch size")
 tf.app.flags.DEFINE_string("deep_layers", '200,200,200', "deep layers")
 tf.app.flags.DEFINE_string("dataset_path", '/home/wangrc/Downloads/deepfmdata/', "Data path")
+tf.app.flags.DEFINE_integer("dataset_parts", 10, "Tfrecord counts")
+tf.app.flags.DEFINE_integer("dataset_eval", 1, "Eval tfrecord")
+tf.app.flags.DEFINE_string("export_path", './export/', "Model export path")
+tf.app.flags.DEFINE_integer("log_steps", 100, "Log_step_count_steps")
 
 feature_description = {
     'label': tf.FixedLenFeature((), tf.int64),
@@ -28,7 +32,7 @@ feature_description = {
     "u_activelevel": tf.FixedLenFeature(dtype=tf.string, shape=1),
     "u_age": tf.FixedLenFeature(dtype=tf.string, shape=1),
     "u_marriage": tf.FixedLenFeature(dtype=tf.string, shape=1),
-    "u_sex": tf.FixedLenFeature(dtype=tf.string, shape=(1), ),
+    "u_sex": tf.FixedLenFeature(dtype=tf.string, shape=1, ),
     "u_sex_age": tf.FixedLenFeature(dtype=tf.string, shape=1),
     "u_sex_marriage": tf.FixedLenFeature(dtype=tf.string, shape=1),
     "u_age_marriage": tf.FixedLenFeature(dtype=tf.string, shape=1),
@@ -110,7 +114,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(i_info_exposed_amt)
 
     i_info_exposed_amt = feature_column.numeric_column('i_info_exposed_amt', default_value=0.0,
-                                                       normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                       normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(i_info_exposed_amt)
 
     i_info_clicked_amt = feature_column.numeric_column(
@@ -125,7 +129,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(i_info_clicked_amt)
 
     i_info_clicked_amt = feature_column.numeric_column('i_info_clicked_amt', default_value=0.0,
-                                                       normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                       normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(i_info_clicked_amt)
 
     i_info_ctr = feature_column.numeric_column('i_info_ctr', default_value=0.0)
@@ -138,7 +142,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(i_info_ctr)
 
     i_info_ctr = feature_column.numeric_column('i_info_ctr', default_value=0.0,
-                                               normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                               normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(i_info_ctr)
 
     i_cate_exposed_amt = feature_column.numeric_column(
@@ -154,7 +158,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(i_cate_exposed_amt)
 
     i_cate_exposed_amt = feature_column.numeric_column('i_cate_exposed_amt', default_value=0.0,
-                                                       normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                       normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(i_cate_exposed_amt)
 
     i_cate_clicked_amt = feature_column.numeric_column(
@@ -170,7 +174,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(i_cate_clicked_amt)
 
     i_cate_clicked_amt = feature_column.numeric_column('i_cate_clicked_amt', default_value=0.0,
-                                                       normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                       normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(i_cate_clicked_amt)
 
     i_category_ctr = feature_column.numeric_column(
@@ -186,7 +190,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(i_category_ctr)
 
     i_category_ctr = feature_column.numeric_column('i_category_ctr', default_value=0.0,
-                                                   normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                   normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(i_category_ctr)
 
     c_uid_type_ctr_1 = feature_column.numeric_column(
@@ -201,7 +205,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(c_uid_type_ctr_1)
 
     c_uid_type_ctr_1 = feature_column.numeric_column('c_uid_type_ctr_1', default_value=0.0,
-                                                     normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                     normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(c_uid_type_ctr_1)
 
     c_uid_type_clicked_amt_1 = feature_column.numeric_column(
@@ -215,7 +219,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(c_uid_type_clicked_amt_1)
 
     c_uid_type_clicked_amt_1 = feature_column.numeric_column('c_uid_type_clicked_amt_1', default_value=0.0,
-                                                             normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                             normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(c_uid_type_clicked_amt_1)
 
     c_uid_type_exposed_amt_1 = feature_column.numeric_column(
@@ -230,7 +234,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(c_uid_type_exposed_amt_1)
 
     c_uid_type_exposed_amt_1 = feature_column.numeric_column('c_uid_type_exposed_amt_1', default_value=0.0,
-                                                             normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                             normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(c_uid_type_exposed_amt_1)
 
     c_uid_type_ctr_3 = feature_column.numeric_column(
@@ -245,7 +249,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(c_uid_type_ctr_3)
 
     c_uid_type_ctr_3 = feature_column.numeric_column('c_uid_type_ctr_3', default_value=0.0,
-                                                     normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                     normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(c_uid_type_ctr_3)
 
     c_uid_type_clicked_amt_3 = feature_column.numeric_column(
@@ -260,7 +264,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(c_uid_type_clicked_amt_3)
 
     c_uid_type_clicked_amt_3 = feature_column.numeric_column('c_uid_type_clicked_amt_3', default_value=0.0,
-                                                             normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                             normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(c_uid_type_clicked_amt_3)
 
     c_uid_type_exposed_amt_3 = feature_column.numeric_column(
@@ -275,7 +279,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(c_uid_type_exposed_amt_3)
 
     c_uid_type_exposed_amt_3 = feature_column.numeric_column('c_uid_type_exposed_amt_3', default_value=0.0,
-                                                             normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                             normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(c_uid_type_exposed_amt_3)
 
     c_uid_type_ctr_7 = feature_column.numeric_column(
@@ -291,7 +295,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(c_uid_type_ctr_7)
 
     c_uid_type_ctr_7 = feature_column.numeric_column('c_uid_type_ctr_7', default_value=0.0,
-                                                     normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                     normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(c_uid_type_ctr_7)
 
     c_uid_type_clicked_amt_7 = feature_column.numeric_column(
@@ -306,7 +310,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(c_uid_type_clicked_amt_7)
 
     c_uid_type_clicked_amt_7 = feature_column.numeric_column('c_uid_type_clicked_amt_7', default_value=0.0,
-                                                             normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                             normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(c_uid_type_clicked_amt_7)
 
     c_uid_type_exposed_amt_7 = feature_column.numeric_column(
@@ -321,7 +325,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(c_uid_type_exposed_amt_7)
 
     c_uid_type_exposed_amt_7 = feature_column.numeric_column('c_uid_type_exposed_amt_7', default_value=0.0,
-                                                             normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                             normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(c_uid_type_exposed_amt_7)
 
     c_uid_type_ctr_14 = feature_column.numeric_column(
@@ -337,7 +341,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(c_uid_type_ctr_14)
 
     c_uid_type_ctr_14 = feature_column.numeric_column('c_uid_type_ctr_14', default_value=0.0,
-                                                      normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                      normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(c_uid_type_ctr_14)
 
     c_uid_type_clicked_amt_14 = feature_column.numeric_column(
@@ -352,7 +356,8 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(c_uid_type_clicked_amt_14)
 
     c_uid_type_clicked_amt_14 = feature_column.numeric_column('c_uid_type_clicked_amt_14', default_value=0.0,
-                                                              normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                              normalizer_fn=lambda x: tf.log(
+                                                                  x + sys.float_info.epsilon))
     linear_feature_columns.append(c_uid_type_clicked_amt_14)
 
     c_uid_type_exposed_amt_14 = feature_column.numeric_column(
@@ -368,7 +373,8 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(c_uid_type_exposed_amt_14)
 
     c_uid_type_exposed_amt_14 = feature_column.numeric_column('c_uid_type_exposed_amt_14', default_value=0.0,
-                                                              normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                              normalizer_fn=lambda x: tf.log(
+                                                                  x + sys.float_info.epsilon))
     linear_feature_columns.append(c_uid_type_exposed_amt_14)
 
     c_user_flavor = feature_column.numeric_column(
@@ -382,7 +388,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(c_user_flavor)
 
     c_user_flavor = feature_column.numeric_column('c_user_flavor', default_value=0.0,
-                                                  normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                  normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(c_user_flavor)
 
     u_activetime_at1 = feature_column.numeric_column(
@@ -396,7 +402,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(u_activetime_at1)
 
     u_activetime_at1 = feature_column.numeric_column('u_activetime_at1', default_value=0.0,
-                                                     normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                     normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(u_activetime_at1)
 
     u_activetime_at2 = feature_column.numeric_column(
@@ -410,7 +416,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(u_activetime_at2)
 
     u_activetime_at2 = feature_column.numeric_column('u_activetime_at2', default_value=0.0,
-                                                     normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                     normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(u_activetime_at2)
 
     u_activetime_at3 = feature_column.numeric_column(
@@ -424,7 +430,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(u_activetime_at3)
 
     u_activetime_at3 = feature_column.numeric_column('u_activetime_at3', default_value=0.0,
-                                                     normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                     normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(u_activetime_at3)
 
     u_activetime_at4 = feature_column.numeric_column(
@@ -438,7 +444,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(u_activetime_at4)
 
     u_activetime_at4 = feature_column.numeric_column('u_activetime_at4', default_value=0.0,
-                                                     normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                     normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(u_activetime_at4)
 
     u_activetime_at5 = feature_column.numeric_column(
@@ -452,7 +458,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(u_activetime_at5)
 
     u_activetime_at5 = feature_column.numeric_column('u_activetime_at5', default_value=0.0,
-                                                     normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                     normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(u_activetime_at5)
 
     i_mini_img_size = feature_column.numeric_column(
@@ -466,7 +472,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(i_mini_img_size)
 
     i_mini_img_size = feature_column.numeric_column('i_mini_img_size', default_value=0.0,
-                                                    normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                    normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(i_mini_img_size)
 
     i_comment_count = feature_column.numeric_column(
@@ -480,7 +486,7 @@ def build_model_columns(embedding_size):
     embedding_feature_columns.append(i_comment_count)
 
     i_comment_count = feature_column.numeric_column('i_comment_count', default_value=0.0,
-                                                    normalizer_fn=lambda x: tf.log(x+sys.float_info.epsilon))
+                                                    normalizer_fn=lambda x: tf.log(x + sys.float_info.epsilon))
     linear_feature_columns.append(i_comment_count)
 
     u_brand = feature_column.categorical_column_with_vocabulary_list('u_brand',
@@ -644,38 +650,29 @@ def model_fn(features, labels, mode, params):
                                             training=(mode == tf.estimator.ModeKeys.TRAIN))
         y_dnn = tf.layers.dense(dnn_net, 1, activation=tf.nn.relu)
 
-    tf.logging.info('y_1d, logits.shape:{}'.format(y_1d.shape))
-    tf.logging.info('y_2d, logits.shape:{}'.format(y_2d.shape))
-    tf.logging.info('y_dnn, logits.shape:{}'.format(y_dnn.shape))
-
     logits = tf.concat([y_1d, y_2d, y_dnn], axis=-1)
     logits = tf.layers.dense(logits, units=1)
     logits = tf.reshape(logits, (-1,))
-    predictions = tf.sigmoid(logits)
+    pred = tf.sigmoid(logits)
+
+    predictions = {"prob": pred}
+    export_outputs = {
+        tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY: tf.estimator.export.PredictOutput(
+            predictions)}
+
+    if mode == tf.estimator.ModeKeys.PREDICT:
+        return tf.estimator.EstimatorSpec(
+            mode=mode,
+            predictions=predictions,
+            export_outputs=export_outputs)
 
     loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
         logits=logits,
         labels=tf.cast(labels, tf.float32))
     )
-    # loss += tf.losses.get_regularization_losses()
-
     eval_metric_ops = {
-        "auc": tf.metrics.auc(labels, predictions)
+        "auc": tf.metrics.auc(labels, pred)
     }
-
-    optimizer = tf.train.AdagradOptimizer(learning_rate=params['learning_rate'])
-    train_op = optimizer.minimize(loss, global_step=tf.train.get_global_step())
-
-    export_outputs = {
-        tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY: tf.estimator.export.PredictOutput(
-            predictions)}
-
-    if mode == tf.estimator.ModeKeys.TRAIN:
-        return tf.estimator.EstimatorSpec(
-            mode=mode,
-            predictions=predictions,
-            loss=loss,
-            train_op=train_op)
 
     if mode == tf.estimator.ModeKeys.EVAL:
         return tf.estimator.EstimatorSpec(
@@ -684,26 +681,28 @@ def model_fn(features, labels, mode, params):
             loss=loss,
             eval_metric_ops=eval_metric_ops)
 
-    if mode == tf.estimator.ModeKeys.PREDICT:
+    optimizer = tf.train.AdagradOptimizer(learning_rate=params['learning_rate'])
+    train_op = optimizer.minimize(loss, global_step=tf.train.get_global_step())
+
+    if mode == tf.estimator.ModeKeys.TRAIN:
         return tf.estimator.EstimatorSpec(
             mode=mode,
             predictions=predictions,
-            export_outputs=export_outputs)
+            loss=loss,
+            train_op=train_op)
 
 
 def main(argv):
-    print(argv)
     linear_feature_columns, embedding_feature_columns = build_model_columns(FLAGS.embedding_size)
 
     session_config = tf.ConfigProto(log_device_placement=False)
     session_config.gpu_options.allow_growth = True
 
     config = tf.estimator.RunConfig(
-        # save_checkpoints_secs=2 * 60,
         save_checkpoints_steps=1000,
         keep_checkpoint_max=5,
-        log_step_count_steps=100,
-        save_summary_steps=200
+        log_step_count_steps=FLAGS.log_steps,
+        save_summary_steps=100
     ).replace(session_config=session_config)
 
     model_params = {
@@ -723,11 +722,12 @@ def main(argv):
     )
 
     data_dir = FLAGS.dataset_path
-    train_files = [data_dir + 'part-r-0000%d' % i for i in range(9)]
-    eval_files = [data_dir + 'part-r-00009']
+    data_files = []
+    for i in range(FLAGS.dataset_parts):
+        data_files.append(data_dir + 'part-r-{:0>5}'.format(i))
 
-    tf.logging.info('train files :{}'.format(train_files))
-    tf.logging.info('eval files :{}'.format(eval_files))
+    train_files = data_files[:-FLAGS.dataset_eval]
+    eval_files = data_files[-FLAGS.dataset_eval:]
 
     if FLAGS.task_type == 'train':
         train_spec = tf.estimator.TrainSpec(input_fn=lambda: input_fn(
@@ -743,8 +743,17 @@ def main(argv):
     elif FLAGS.task_type == 'eval':
         deepfm.evaluate(input_fn=lambda: input_fn(eval_files, num_epochs=1, batch_size=FLAGS.batch_size))
 
+    feature_description.pop('label')
+    serving_fn = tf.estimator.export.build_parsing_serving_input_receiver_fn(feature_description)
+
+    deepfm.export_savedmodel(
+        export_dir_base=FLAGS.export_path,
+        serving_input_receiver_fn=serving_fn,
+        as_text=True,
+    )
+    tf.logging.info('Model exported.')
+
 
 if __name__ == '__main__':
-    print('executing...')
     tf.logging.set_verbosity(tf.logging.INFO)
     tf.app.run(main)
