@@ -11,8 +11,8 @@ FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_integer("embedding_size", 32, "Embedding size")
 tf.app.flags.DEFINE_float("learning_rate", 0.001, "Learning rate")
 tf.app.flags.DEFINE_float("dropout", 0.5, "Dropout rate")
-tf.app.flags.DEFINE_string("task_type", 'predict', "Task type {train, infer, eval, export}")
-tf.app.flags.DEFINE_integer("num_epochs", 10, "Number of epochs")
+tf.app.flags.DEFINE_string("task_type", 'train', "Task type {train, infer, eval, export}")
+tf.app.flags.DEFINE_integer("num_epochs", 5, "Number of epochs")
 tf.app.flags.DEFINE_integer("batch_size", 256, "Number of batch size")
 tf.app.flags.DEFINE_string("deep_layers", '200,200,200', "deep layers")
 tf.app.flags.DEFINE_string("dataset_path", '/home/wangrc/Downloads/deepfmdata/', "Data path")
@@ -743,70 +743,69 @@ def main(argv):
     elif FLAGS.task_type == 'eval':
         deepfm.evaluate(input_fn=lambda: input_fn(eval_files, num_epochs=1, batch_size=FLAGS.batch_size))
     elif FLAGS.task_type == 'predict':
-        p=deepfm.predict(input_fn=lambda: input_fn(eval_files, num_epochs=1, batch_size=FLAGS.batch_size))
+        p = deepfm.predict(input_fn=lambda: input_fn(eval_files, num_epochs=1, batch_size=FLAGS.batch_size))
         print('done predit')
         # tf.data.Dataset.from_tensor_slices()
         # for i in p:
         #     print(i["prob"])
-
 
     # Not a good choice for REST API. See test_client.py
     # feature_description.pop('label')
     # serving_fn = tf.estimator.export.build_parsing_serving_input_receiver_fn(feature_description)
 
     features = {
-        "u_id": tf.placeholder(dtype=tf.int32, shape=1, name='u_id'),
-        "i_id": tf.placeholder(dtype=tf.int32, shape=1, name='i_id'),
+        "u_id": tf.placeholder(dtype=tf.int32, shape=(None, 1), name='u_id'),
+        "i_id": tf.placeholder(dtype=tf.int32, shape=(None, 1), name='i_id'),
 
-        "i_channel": tf.placeholder(dtype=tf.string, shape=1, name='i_channel'),
+        "i_channel": tf.placeholder(dtype=tf.string, shape=(None, 1), name='i_channel'),
 
-        "u_brand": tf.placeholder(dtype=tf.string, shape=1, name='u_brand'),
-        "u_operator": tf.placeholder(dtype=tf.string, shape=1, name='u_operator'),
-        "u_activelevel": tf.placeholder(dtype=tf.string, shape=1, name='u_activelevel'),
+        "u_brand": tf.placeholder(dtype=tf.string, shape=(None, 1), name='u_brand'),
+        "u_operator": tf.placeholder(dtype=tf.string, shape=(None, 1), name='u_operator'),
+        "u_activelevel": tf.placeholder(dtype=tf.string, shape=(None, 1), name='u_activelevel'),
 
-        "u_age": tf.placeholder(dtype=tf.string, shape=1, name='u_age'),
-        "u_marriage": tf.placeholder(dtype=tf.string, shape=1, name='u_marriage'),
-        "u_sex": tf.placeholder(dtype=tf.string, shape=1, name='u_sex'),
-        "u_sex_age": tf.placeholder(dtype=tf.string, shape=1, name='u_sex_age'),
-        "u_sex_marriage": tf.placeholder(dtype=tf.string, shape=1, name='u_sex_marriage'),
-        "u_age_marriage": tf.placeholder(dtype=tf.string, shape=1, name='u_age_marriage'),
+        "u_age": tf.placeholder(dtype=tf.string, shape=(None, 1), name='u_age'),
+        "u_marriage": tf.placeholder(dtype=tf.string, shape=(None, 1), name='u_marriage'),
+        "u_sex": tf.placeholder(dtype=tf.string, shape=(None, 1), name='u_sex'),
+        "u_sex_age": tf.placeholder(dtype=tf.string, shape=(None, 1), name='u_sex_age'),
+        "u_sex_marriage": tf.placeholder(dtype=tf.string, shape=(None, 1), name='u_sex_marriage'),
+        "u_age_marriage": tf.placeholder(dtype=tf.string, shape=(None, 1), name='u_age_marriage'),
 
-        "i_hot_news": tf.placeholder(dtype=tf.string, shape=1, name='i_hot_news'),
-        "i_is_recommend": tf.placeholder(dtype=tf.string, shape=1, name='i_is_recommend'),
+        "i_hot_news": tf.placeholder(dtype=tf.string, shape=(None, 1), name='i_hot_news'),
+        "i_is_recommend": tf.placeholder(dtype=tf.string, shape=(None, 1), name='i_is_recommend'),
 
-        "i_info_exposed_amt": tf.placeholder(dtype=tf.float32, shape=1, name='i_info_exposed_amt'),
-        "i_info_clicked_amt": tf.placeholder(dtype=tf.float32, shape=1, name='i_info_clicked_amt'),
-        "i_info_ctr": tf.placeholder(dtype=tf.float32, shape=1, name='i_info_ctr'),
+        "i_info_exposed_amt": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='i_info_exposed_amt'),
+        "i_info_clicked_amt": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='i_info_clicked_amt'),
+        "i_info_ctr": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='i_info_ctr'),
 
-        "i_cate_exposed_amt": tf.placeholder(dtype=tf.float32, shape=1, name='i_cate_exposed_amt'),
-        "i_cate_clicked_amt": tf.placeholder(dtype=tf.float32, shape=1, name='i_cate_clicked_amt'),
-        "i_category_ctr": tf.placeholder(dtype=tf.float32, shape=1, name='i_category_ctr'),
+        "i_cate_exposed_amt": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='i_cate_exposed_amt'),
+        "i_cate_clicked_amt": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='i_cate_clicked_amt'),
+        "i_category_ctr": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='i_category_ctr'),
 
-        "c_uid_type_ctr_1": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_ctr_1'),
-        "c_uid_type_clicked_amt_1": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_clicked_amt_1'),
-        "c_uid_type_exposed_amt_1": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_exposed_amt_1'),
-        "c_uid_type_ctr_3": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_ctr_3'),
-        "c_uid_type_clicked_amt_3": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_clicked_amt_3'),
-        "c_uid_type_exposed_amt_3": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_exposed_amt_3'),
-        "c_uid_type_ctr_7": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_ctr_7'),
-        "c_uid_type_clicked_amt_7": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_clicked_amt_7'),
-        "c_uid_type_exposed_amt_7": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_exposed_amt_7'),
-        "c_uid_type_ctr_14": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_ctr_14'),
-        "c_uid_type_clicked_amt_14": tf.placeholder(dtype=tf.float32, shape=1,
+        "c_uid_type_ctr_1": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='c_uid_type_ctr_1'),
+        "c_uid_type_clicked_amt_1": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='c_uid_type_clicked_amt_1'),
+        "c_uid_type_exposed_amt_1": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='c_uid_type_exposed_amt_1'),
+        "c_uid_type_ctr_3": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='c_uid_type_ctr_3'),
+        "c_uid_type_clicked_amt_3": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='c_uid_type_clicked_amt_3'),
+        "c_uid_type_exposed_amt_3": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='c_uid_type_exposed_amt_3'),
+        "c_uid_type_ctr_7": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='c_uid_type_ctr_7'),
+        "c_uid_type_clicked_amt_7": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='c_uid_type_clicked_amt_7'),
+        "c_uid_type_exposed_amt_7": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='c_uid_type_exposed_amt_7'),
+        "c_uid_type_ctr_14": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='c_uid_type_ctr_14'),
+        "c_uid_type_clicked_amt_14": tf.placeholder(dtype=tf.float32, shape=(None, 1),
                                                     name='c_uid_type_clicked_amt_14'),
-        "c_uid_type_exposed_amt_14": tf.placeholder(dtype=tf.float32, shape=1,
+        "c_uid_type_exposed_amt_14": tf.placeholder(dtype=tf.float32, shape=(None, 1),
                                                     name='c_uid_type_exposed_amt_14'),
 
-        "c_user_flavor": tf.placeholder(dtype=tf.float32, shape=1, name='c_user_flavor'),
+        "c_user_flavor": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='c_user_flavor'),
 
-        "u_activetime_at1": tf.placeholder(dtype=tf.float32, shape=1, name='u_activetime_at1'),
-        "u_activetime_at2": tf.placeholder(dtype=tf.float32, shape=1, name='u_activetime_at2'),
-        "u_activetime_at3": tf.placeholder(dtype=tf.float32, shape=1, name='u_activetime_at3'),
-        "u_activetime_at4": tf.placeholder(dtype=tf.float32, shape=1, name='u_activetime_at4'),
-        "u_activetime_at5": tf.placeholder(dtype=tf.float32, shape=1, name='u_activetime_at5'),
+        "u_activetime_at1": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='u_activetime_at1'),
+        "u_activetime_at2": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='u_activetime_at2'),
+        "u_activetime_at3": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='u_activetime_at3'),
+        "u_activetime_at4": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='u_activetime_at4'),
+        "u_activetime_at5": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='u_activetime_at5'),
 
-        "i_mini_img_size": tf.placeholder(dtype=tf.float32, shape=1, name='i_mini_img_size'),
-        "i_comment_count": tf.placeholder(dtype=tf.float32, shape=1, name='i_comment_count'),
+        "i_mini_img_size": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='i_mini_img_size'),
+        "i_comment_count": tf.placeholder(dtype=tf.float32, shape=(None, 1), name='i_comment_count'),
     }
     serving_fn = tf.estimator.export.build_raw_serving_input_receiver_fn(features)
 

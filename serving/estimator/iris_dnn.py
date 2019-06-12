@@ -82,18 +82,19 @@ feature_specification = {
 # feature_spec = tf.feature_column.make_parse_example_spec(feature_columns)
 
 features = {
-    'SepalLength': tf.placeholder(dtype=tf.float32, shape=(None, 1), name='SepalLength'),
-    'SepalWidth': tf.placeholder(dtype=tf.float32, shape=(None, 1), name='SepalWidth'),
-    'PetalLength': tf.placeholder(dtype=tf.float32, shape=(None, 1), name='PetalLength'),
-    'PetalWidth': tf.placeholder(dtype=tf.float32, shape=(None, 1), name='PetalWidth')
+    'SepalLength': tf.placeholder(dtype=tf.float32, shape=(None,1), name='SepalLength'),
+    'SepalWidth': tf.placeholder(dtype=tf.float32, shape=(None,1), name='SepalWidth'),
+    'PetalLength': tf.placeholder(dtype=tf.float32, shape=(None,1), name='PetalLength'),
+    'PetalWidth': tf.placeholder(dtype=tf.float32, shape=(None,1), name='PetalWidth')
 }
 
 # Can pass the key-value format to http REST api directly.
 # curl -d '{"signature_name": "predict","instances": [{"SepalLength":[5.1],"SepalWidth":[3.3],"PetalLength":[1.7],"PetalWidth":[0.5]}]}' -X POST http://localhost:8501/v1/models/iris:predict
 
-# saved_model_cli run --dir /home/wangrc/Downloads/tf-serve-master/export_raw/1560306112 \
+# If using shape=(None,1), the input shape should be (?,1). Means two dimensions
+# saved_model_cli run --dir /home/wangrc/github/summaries/serving/estimator/export_raw/1560322385 \
 #   --tag_set serve --signature_def predict \
-#   --input_exprs 'SepalLength=[5.1];SepalWidth=[3.3];PetalLength=[1.7];PetalWidth=[0.5]'
+#   --input_exprs 'SepalLength=[[5.1],[5.1]];SepalWidth=[[3.3],[3]];PetalLength=[[1.7],[3]];PetalWidth=[[0.5],[2]]'
 
 serving_input_receiver_fn = tf.estimator.export.build_raw_serving_input_receiver_fn(features)
 export_dir = classifier.export_savedmodel('export_raw', serving_input_receiver_fn)
