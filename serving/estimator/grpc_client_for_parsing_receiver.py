@@ -1,16 +1,14 @@
-
 # GRPC remote call using estimator model with build_parsing_serving_input_receiver_fn
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow_serving.apis import predict_pb2
 from tensorflow_serving.apis import prediction_service_pb2_grpc
 import grpc
+from time import time
+import numpy as np
 
-tf.app.flags.DEFINE_string('server', 'localhost:8555',
+tf.app.flags.DEFINE_string('server', 'ha05:8556',
                            'Server host:port.')
 tf.app.flags.DEFINE_string('model', 'iris',
                            'Model name.')
@@ -32,33 +30,27 @@ def main(_):
     request = predict_pb2.PredictRequest()
     request.model_spec.name = FLAGS.model
     request.model_spec.signature_name = 'predict'
+    batching = []
 
-    feature_dict = {'SepalLength': _float_feature(value=2.5),
-                    'SepalWidth': _float_feature(value=0.5),
-                    'PetalLength': _float_feature(value=1.1),
-                    'PetalWidth': _float_feature(value=1.1)}
+    for i in range(1000):
+        feature_dict = {'SepalLength': _float_feature(value=np.random.random()),
+                        'SepalWidth': _float_feature(value=np.random.random()),
+                        'PetalLength': _float_feature(value=np.random.random()),
+                        'PetalWidth': _float_feature(value=np.random.random())}
 
-    example = tf.train.Example(features=tf.train.Features(feature=feature_dict))
-    serialized = example.SerializeToString()
+        example = tf.train.Example(features=tf.train.Features(feature=feature_dict))
+        serialized = example.SerializeToString()
+        batching.append(serialized)
 
-    feature_dict2 = {'SepalLength': _float_feature(value=3.5),
-                    'SepalWidth': _float_feature(value=3.5),
-                    'PetalLength': _float_feature(value=1.1),
-                    'PetalWidth': _float_feature(value=1.1)}
-
-    example2 = tf.train.Example(features=tf.train.Features(feature=feature_dict2))
-
-    serialized2 = example2.SerializeToString()
-
-    batching=[serialized2,serialized,serialized,serialized]
     request.inputs['examples'].CopyFrom(
         tf.make_tensor_proto(batching, shape=[len(batching)]))
 
+    start = time()
     result_future = stub.Predict.future(request, 5.0)
+    elapsed = (time() - start)
     prediction = result_future.result().outputs['probabilities']
-
     print(prediction)
-
+    print("Time used:{0}ms".format(round(elapsed * 1000, 2)))
 
 if __name__ == '__main__':
     tf.app.run()
