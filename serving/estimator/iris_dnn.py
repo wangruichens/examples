@@ -82,10 +82,10 @@ feature_specification = {
 # feature_spec = tf.feature_column.make_parse_example_spec(feature_columns)
 
 features = {
-    'SepalLength': tf.placeholder(dtype=tf.float32, shape=(None,1), name='SepalLength'),
-    'SepalWidth': tf.placeholder(dtype=tf.float32, shape=(None,1), name='SepalWidth'),
-    'PetalLength': tf.placeholder(dtype=tf.float32, shape=(None,1), name='PetalLength'),
-    'PetalWidth': tf.placeholder(dtype=tf.float32, shape=(None,1), name='PetalWidth')
+    'SepalLength': tf.placeholder(dtype=tf.float32, shape=(1), name='SepalLength'),
+    'SepalWidth': tf.placeholder(dtype=tf.float32, shape=(1), name='SepalWidth'),
+    'PetalLength': tf.placeholder(dtype=tf.float32, shape=(1), name='PetalLength'),
+    'PetalWidth': tf.placeholder(dtype=tf.float32, shape=(1), name='PetalWidth')
 }
 
 # Can pass the key-value format to http REST api directly.

@@ -145,7 +145,7 @@ p3 = {"c_uid_type_clicked_amt_1": [107.0],
 #   --model_name=deepfm \
 #   --model_base_path="/home/wangrc/Desktop/"
 
-data = json.dumps({"signature_name": "serving_default", "instances": [p3]})
+data = json.dumps({"signature_name": "serving_default", "instances": [p]})
 # print(data)
 
 headers = {"content-type": "application/json"}
@@ -153,4 +153,3 @@ json_response = requests.post('http://localhost:8501/v1/models/deepfm:predict', 
 print(json_response.text)
 predictions = json.loads(json_response.text)['predictions']
 print(predictions)
-
