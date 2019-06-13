@@ -1,4 +1,5 @@
 # Only build_raw_serving_input_receiver_fn support using REST api
+# Otherwise need example.SerializeToString()
 
 import json
 import requests

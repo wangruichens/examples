@@ -1,3 +1,5 @@
+# REST remote call using estimator model with build_raw_serving_input_receiver_fn
+
 import json
 import requests
 import numpy as np
