@@ -4,7 +4,7 @@ import sys
 from tensorflow_estimator import estimator
 import os
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = ''
+# os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 # tf.enable_eager_execution()
 
 
@@ -683,7 +683,7 @@ def model_fn(features, labels, mode, params):
             loss=loss,
             eval_metric_ops=eval_metric_ops)
 
-    optimizer = tf.train.AdagradOptimizer(learning_rate=params['learning_rate'])
+    optimizer = tf.train.AdamOptimizer(learning_rate=params['learning_rate'])
     train_op = optimizer.minimize(loss, global_step=tf.train.get_global_step())
 
     if mode == estimator.ModeKeys.TRAIN:
