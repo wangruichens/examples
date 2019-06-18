@@ -24,7 +24,7 @@ tf.app.flags.DEFINE_string('model', 'deepfm',
                            'Model name.')
 tf.app.flags.DEFINE_string('signature_name', 'serving_default',
                            'Signature name.')
-tf.app.flags.DEFINE_integer('batch_size', 500,
+tf.app.flags.DEFINE_integer('batch_size', 200,
                             'Batch size.')
 FLAGS = tf.app.flags.FLAGS
 

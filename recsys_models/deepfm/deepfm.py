@@ -12,7 +12,7 @@ FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_integer("embedding_size", 32, "Embedding size")
 tf.app.flags.DEFINE_float("learning_rate", 0.01, "Learning rate")
 tf.app.flags.DEFINE_float("dropout", 0.5, "Dropout rate")
-tf.app.flags.DEFINE_string("task_type", 'eval', "Task type {train, infer, eval, export}")
+tf.app.flags.DEFINE_string("task_type", 'train', "Task type {train, infer, eval, export}")
 tf.app.flags.DEFINE_integer("num_epochs", 10, "Number of epochs")
 tf.app.flags.DEFINE_string("deep_layers", '200,200,200', "deep layers")
 tf.app.flags.DEFINE_string("dataset_path", '/home/wangrc/deepfm_data/', "Data path")
@@ -736,6 +736,7 @@ def main(_):
 
     train_files = data_files[:-FLAGS.dataset_eval]
     eval_files = data_files[-FLAGS.dataset_eval:]
+    # hook = estimator.ProfilerHook(save_steps=10, output_dir='./time/', show_memory=True, show_dataflow=True)
 
     if FLAGS.task_type == 'train':
         train_spec = estimator.TrainSpec(input_fn=lambda: input_fn(

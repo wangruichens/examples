@@ -33,7 +33,7 @@ def eval_input_fn(features, labels, batch_size):
     dataset = dataset.batch(batch_size)
     return dataset
 
-
+hook = estimator.ProfilerHook(save_steps=300, output_dir='./time/', show_memory=True, show_dataflow=True)
 feature_columns = [tf.feature_column.numeric_column(key=key)
                    for key in train_x.keys()]
 
@@ -59,7 +59,7 @@ classifier = estimator.DNNClassifier(
     config=config)
 
 classifier.train(
-    input_fn=lambda: train_input_fn(train_x, train_y, batch_size=BATCH_SIZE),
+    input_fn=lambda: train_input_fn(train_x, train_y, batch_size=BATCH_SIZE),hooks=[hook],
     steps=STEPS)
 
 # evaluate
