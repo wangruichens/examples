@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow import feature_column
 import sys
+from tensorflow_estimator import estimator
 import os
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = ''
@@ -9,17 +10,19 @@ import os
 
 FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_integer("embedding_size", 32, "Embedding size")
-tf.app.flags.DEFINE_float("learning_rate", 0.001, "Learning rate")
+tf.app.flags.DEFINE_float("learning_rate", 0.01, "Learning rate")
 tf.app.flags.DEFINE_float("dropout", 0.5, "Dropout rate")
-tf.app.flags.DEFINE_string("task_type", 'train', "Task type {train, infer, eval, export}")
-tf.app.flags.DEFINE_integer("num_epochs", 5, "Number of epochs")
-tf.app.flags.DEFINE_integer("batch_size", 256, "Number of batch size")
+tf.app.flags.DEFINE_string("task_type", 'eval', "Task type {train, infer, eval, export}")
+tf.app.flags.DEFINE_integer("num_epochs", 10, "Number of epochs")
 tf.app.flags.DEFINE_string("deep_layers", '200,200,200', "deep layers")
-tf.app.flags.DEFINE_string("dataset_path", '/home/wangrc/Downloads/deepfmdata/', "Data path")
-tf.app.flags.DEFINE_integer("dataset_parts", 10, "Tfrecord counts")
+tf.app.flags.DEFINE_string("dataset_path", '/home/wangrc/deepfm_data/', "Data path")
+tf.app.flags.DEFINE_integer("dataset_parts", 100, "Tfrecord counts")
 tf.app.flags.DEFINE_integer("dataset_eval", 1, "Eval tfrecord")
 tf.app.flags.DEFINE_string("export_path", './export/', "Model export path")
+tf.app.flags.DEFINE_integer("batch_size", 1024, "Number of batch size")
 tf.app.flags.DEFINE_integer("log_steps", 100, "Log_step_count_steps")
+tf.app.flags.DEFINE_integer("save_checkpoints_steps", 2000, "save_checkpoints_steps")
+tf.app.flags.DEFINE_boolean("mirror", True, "Mirrored Strategy")
 
 feature_description = {
     'label': tf.FixedLenFeature((), tf.int64),
@@ -604,10 +607,10 @@ def _parse_example(serial_exmp):
 
 def input_fn(filenames, batch_size=32, num_epochs=-1, need_shuffle=False):
     dataset = tf.data.TFRecordDataset(filenames)
-    dataset = dataset.map(_parse_example, num_parallel_calls=8)
+    dataset = dataset.map(_parse_example, num_parallel_calls=4)
     if need_shuffle:
-        dataset = dataset.shuffle(batch_size * 100)
-    dataset = dataset.prefetch(batch_size * 10).batch(batch_size).repeat(num_epochs)
+        dataset = dataset.shuffle(batch_size * 10)
+    dataset = dataset.prefetch(buffer_size=1).batch(batch_size).repeat(num_epochs)
     return dataset
 
 
@@ -644,10 +647,8 @@ def model_fn(features, labels, mode, params):
         for i in range(len(layers)):
             dnn_net = tf.layers.dense(dnn_net, i, activation=tf.nn.relu)
 
-            if mode == tf.estimator.ModeKeys.TRAIN:
-                dnn_net = tf.layers.batch_normalization(dnn_net, training=(mode == tf.estimator.ModeKeys.TRAIN))
-                dnn_net = tf.layers.dropout(dnn_net, rate=params['dropout'],
-                                            training=(mode == tf.estimator.ModeKeys.TRAIN))
+            dnn_net = tf.layers.batch_normalization(dnn_net, training=(mode == estimator.ModeKeys.TRAIN))
+            dnn_net = tf.layers.dropout(dnn_net, rate=params['dropout'], training=(mode == estimator.ModeKeys.TRAIN))
         y_dnn = tf.layers.dense(dnn_net, 1, activation=tf.nn.relu)
 
     logits = tf.concat([y_1d, y_2d, y_dnn], axis=-1)
@@ -657,11 +658,11 @@ def model_fn(features, labels, mode, params):
 
     predictions = {"prob": pred}
     export_outputs = {
-        tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY: tf.estimator.export.PredictOutput(
+        tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY: estimator.export.PredictOutput(
             predictions)}
 
-    if mode == tf.estimator.ModeKeys.PREDICT:
-        return tf.estimator.EstimatorSpec(
+    if mode == estimator.ModeKeys.PREDICT:
+        return estimator.EstimatorSpec(
             mode=mode,
             predictions=predictions,
             export_outputs=export_outputs)
@@ -671,11 +672,12 @@ def model_fn(features, labels, mode, params):
         labels=tf.cast(labels, tf.float32))
     )
     eval_metric_ops = {
-        "auc": tf.metrics.auc(labels, pred)
+        "AUC": tf.metrics.auc(labels, pred),
+        'Accuracy': tf.metrics.accuracy(labels, pred)
     }
 
-    if mode == tf.estimator.ModeKeys.EVAL:
-        return tf.estimator.EstimatorSpec(
+    if mode == estimator.ModeKeys.EVAL:
+        return estimator.EstimatorSpec(
             mode=mode,
             predictions=predictions,
             loss=loss,
@@ -684,26 +686,32 @@ def model_fn(features, labels, mode, params):
     optimizer = tf.train.AdagradOptimizer(learning_rate=params['learning_rate'])
     train_op = optimizer.minimize(loss, global_step=tf.train.get_global_step())
 
-    if mode == tf.estimator.ModeKeys.TRAIN:
-        return tf.estimator.EstimatorSpec(
+    if mode == estimator.ModeKeys.TRAIN:
+        return estimator.EstimatorSpec(
             mode=mode,
             predictions=predictions,
             loss=loss,
             train_op=train_op)
 
 
-def main(argv):
+def main(_):
     linear_feature_columns, embedding_feature_columns = build_model_columns(FLAGS.embedding_size)
 
-    session_config = tf.ConfigProto(log_device_placement=False)
-    session_config.gpu_options.allow_growth = True
+    # session_config = tf.ConfigProto(log_device_placement=True)
+    # session_config.gpu_options.allow_growth = True
 
-    config = tf.estimator.RunConfig(
-        save_checkpoints_steps=1000,
+    mirrored_strategy = None
+    if FLAGS.mirror:
+        mirrored_strategy = tf.distribute.MirroredStrategy()
+
+    config = estimator.RunConfig(
+        save_checkpoints_steps=FLAGS.save_checkpoints_steps,
         keep_checkpoint_max=5,
         log_step_count_steps=FLAGS.log_steps,
-        save_summary_steps=100
-    ).replace(session_config=session_config)
+        save_summary_steps=200,
+        train_distribute=mirrored_strategy,
+        eval_distribute=mirrored_strategy
+    )
 
     model_params = {
         'linear_feature_columns': linear_feature_columns,
@@ -714,7 +722,7 @@ def main(argv):
         "deep_layers": FLAGS.deep_layers
     }
 
-    deepfm = tf.estimator.Estimator(
+    deepfm = estimator.Estimator(
         model_fn=model_fn,
         model_dir='./models/deepfm',
         params=model_params,
@@ -730,16 +738,16 @@ def main(argv):
     eval_files = data_files[-FLAGS.dataset_eval:]
 
     if FLAGS.task_type == 'train':
-        train_spec = tf.estimator.TrainSpec(input_fn=lambda: input_fn(
+        train_spec = estimator.TrainSpec(input_fn=lambda: input_fn(
             train_files,
             num_epochs=FLAGS.num_epochs,
             batch_size=FLAGS.batch_size,
             need_shuffle=True))
-        eval_spec = tf.estimator.EvalSpec(input_fn=lambda: input_fn(
+        eval_spec = estimator.EvalSpec(input_fn=lambda: input_fn(
             eval_files,
             num_epochs=1,
             batch_size=FLAGS.batch_size), steps=None, start_delay_secs=1, throttle_secs=5)
-        tf.estimator.train_and_evaluate(deepfm, train_spec, eval_spec)
+        estimator.train_and_evaluate(deepfm, train_spec, eval_spec)
     elif FLAGS.task_type == 'eval':
         deepfm.evaluate(input_fn=lambda: input_fn(eval_files, num_epochs=1, batch_size=FLAGS.batch_size))
     elif FLAGS.task_type == 'predict':
@@ -749,65 +757,64 @@ def main(argv):
         # for i in p:
         #     print(i["prob"])
 
-    # Not a good choice for REST API. See test_client.py
-    # feature_description.pop('label')
-    # serving_fn = tf.estimator.export.build_parsing_serving_input_receiver_fn(feature_description)
+    feature_description.pop('label')
+    serving_fn = estimator.export.build_parsing_serving_input_receiver_fn(feature_description)
 
-    features = {
-        "u_id": tf.placeholder(dtype=tf.int32, shape=1, name='u_id'),
-        "i_id": tf.placeholder(dtype=tf.int32, shape=1, name='i_id'),
-
-        "i_channel": tf.placeholder(dtype=tf.string, shape=1, name='i_channel'),
-
-        "u_brand": tf.placeholder(dtype=tf.string, shape=1, name='u_brand'),
-        "u_operator": tf.placeholder(dtype=tf.string, shape=1, name='u_operator'),
-        "u_activelevel": tf.placeholder(dtype=tf.string, shape=1, name='u_activelevel'),
-
-        "u_age": tf.placeholder(dtype=tf.string, shape=1, name='u_age'),
-        "u_marriage": tf.placeholder(dtype=tf.string, shape=1, name='u_marriage'),
-        "u_sex": tf.placeholder(dtype=tf.string, shape=1, name='u_sex'),
-        "u_sex_age": tf.placeholder(dtype=tf.string, shape=1, name='u_sex_age'),
-        "u_sex_marriage": tf.placeholder(dtype=tf.string, shape=1, name='u_sex_marriage'),
-        "u_age_marriage": tf.placeholder(dtype=tf.string, shape=1, name='u_age_marriage'),
-
-        "i_hot_news": tf.placeholder(dtype=tf.string, shape=1, name='i_hot_news'),
-        "i_is_recommend": tf.placeholder(dtype=tf.string, shape=1, name='i_is_recommend'),
-
-        "i_info_exposed_amt": tf.placeholder(dtype=tf.float32, shape=1, name='i_info_exposed_amt'),
-        "i_info_clicked_amt": tf.placeholder(dtype=tf.float32, shape=1, name='i_info_clicked_amt'),
-        "i_info_ctr": tf.placeholder(dtype=tf.float32, shape=1, name='i_info_ctr'),
-
-        "i_cate_exposed_amt": tf.placeholder(dtype=tf.float32, shape=1, name='i_cate_exposed_amt'),
-        "i_cate_clicked_amt": tf.placeholder(dtype=tf.float32, shape=1, name='i_cate_clicked_amt'),
-        "i_category_ctr": tf.placeholder(dtype=tf.float32, shape=1, name='i_category_ctr'),
-
-        "c_uid_type_ctr_1": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_ctr_1'),
-        "c_uid_type_clicked_amt_1": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_clicked_amt_1'),
-        "c_uid_type_exposed_amt_1": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_exposed_amt_1'),
-        "c_uid_type_ctr_3": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_ctr_3'),
-        "c_uid_type_clicked_amt_3": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_clicked_amt_3'),
-        "c_uid_type_exposed_amt_3": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_exposed_amt_3'),
-        "c_uid_type_ctr_7": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_ctr_7'),
-        "c_uid_type_clicked_amt_7": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_clicked_amt_7'),
-        "c_uid_type_exposed_amt_7": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_exposed_amt_7'),
-        "c_uid_type_ctr_14": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_ctr_14'),
-        "c_uid_type_clicked_amt_14": tf.placeholder(dtype=tf.float32, shape=1,
-                                                    name='c_uid_type_clicked_amt_14'),
-        "c_uid_type_exposed_amt_14": tf.placeholder(dtype=tf.float32, shape=1,
-                                                    name='c_uid_type_exposed_amt_14'),
-
-        "c_user_flavor": tf.placeholder(dtype=tf.float32, shape=1, name='c_user_flavor'),
-
-        "u_activetime_at1": tf.placeholder(dtype=tf.float32, shape=1, name='u_activetime_at1'),
-        "u_activetime_at2": tf.placeholder(dtype=tf.float32, shape=1, name='u_activetime_at2'),
-        "u_activetime_at3": tf.placeholder(dtype=tf.float32, shape=1, name='u_activetime_at3'),
-        "u_activetime_at4": tf.placeholder(dtype=tf.float32, shape=1, name='u_activetime_at4'),
-        "u_activetime_at5": tf.placeholder(dtype=tf.float32, shape=1, name='u_activetime_at5'),
-
-        "i_mini_img_size": tf.placeholder(dtype=tf.float32, shape=1, name='i_mini_img_size'),
-        "i_comment_count": tf.placeholder(dtype=tf.float32, shape=1, name='i_comment_count'),
-    }
-    serving_fn = tf.estimator.export.build_raw_serving_input_receiver_fn(features)
+    # features = {
+    #     "u_id": tf.placeholder(dtype=tf.int32, shape=1, name='u_id'),
+    #     "i_id": tf.placeholder(dtype=tf.int32, shape=1, name='i_id'),
+    #
+    #     "i_channel": tf.placeholder(dtype=tf.string, shape=1, name='i_channel'),
+    #
+    #     "u_brand": tf.placeholder(dtype=tf.string, shape=1, name='u_brand'),
+    #     "u_operator": tf.placeholder(dtype=tf.string, shape=1, name='u_operator'),
+    #     "u_activelevel": tf.placeholder(dtype=tf.string, shape=1, name='u_activelevel'),
+    #
+    #     "u_age": tf.placeholder(dtype=tf.string, shape=1, name='u_age'),
+    #     "u_marriage": tf.placeholder(dtype=tf.string, shape=1, name='u_marriage'),
+    #     "u_sex": tf.placeholder(dtype=tf.string, shape=1, name='u_sex'),
+    #     "u_sex_age": tf.placeholder(dtype=tf.string, shape=1, name='u_sex_age'),
+    #     "u_sex_marriage": tf.placeholder(dtype=tf.string, shape=1, name='u_sex_marriage'),
+    #     "u_age_marriage": tf.placeholder(dtype=tf.string, shape=1, name='u_age_marriage'),
+    #
+    #     "i_hot_news": tf.placeholder(dtype=tf.string, shape=1, name='i_hot_news'),
+    #     "i_is_recommend": tf.placeholder(dtype=tf.string, shape=1, name='i_is_recommend'),
+    #
+    #     "i_info_exposed_amt": tf.placeholder(dtype=tf.float32, shape=1, name='i_info_exposed_amt'),
+    #     "i_info_clicked_amt": tf.placeholder(dtype=tf.float32, shape=1, name='i_info_clicked_amt'),
+    #     "i_info_ctr": tf.placeholder(dtype=tf.float32, shape=1, name='i_info_ctr'),
+    #
+    #     "i_cate_exposed_amt": tf.placeholder(dtype=tf.float32, shape=1, name='i_cate_exposed_amt'),
+    #     "i_cate_clicked_amt": tf.placeholder(dtype=tf.float32, shape=1, name='i_cate_clicked_amt'),
+    #     "i_category_ctr": tf.placeholder(dtype=tf.float32, shape=1, name='i_category_ctr'),
+    #
+    #     "c_uid_type_ctr_1": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_ctr_1'),
+    #     "c_uid_type_clicked_amt_1": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_clicked_amt_1'),
+    #     "c_uid_type_exposed_amt_1": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_exposed_amt_1'),
+    #     "c_uid_type_ctr_3": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_ctr_3'),
+    #     "c_uid_type_clicked_amt_3": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_clicked_amt_3'),
+    #     "c_uid_type_exposed_amt_3": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_exposed_amt_3'),
+    #     "c_uid_type_ctr_7": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_ctr_7'),
+    #     "c_uid_type_clicked_amt_7": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_clicked_amt_7'),
+    #     "c_uid_type_exposed_amt_7": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_exposed_amt_7'),
+    #     "c_uid_type_ctr_14": tf.placeholder(dtype=tf.float32, shape=1, name='c_uid_type_ctr_14'),
+    #     "c_uid_type_clicked_amt_14": tf.placeholder(dtype=tf.float32, shape=1,
+    #                                                 name='c_uid_type_clicked_amt_14'),
+    #     "c_uid_type_exposed_amt_14": tf.placeholder(dtype=tf.float32, shape=1,
+    #                                                 name='c_uid_type_exposed_amt_14'),
+    #
+    #     "c_user_flavor": tf.placeholder(dtype=tf.float32, shape=1, name='c_user_flavor'),
+    #
+    #     "u_activetime_at1": tf.placeholder(dtype=tf.float32, shape=1, name='u_activetime_at1'),
+    #     "u_activetime_at2": tf.placeholder(dtype=tf.float32, shape=1, name='u_activetime_at2'),
+    #     "u_activetime_at3": tf.placeholder(dtype=tf.float32, shape=1, name='u_activetime_at3'),
+    #     "u_activetime_at4": tf.placeholder(dtype=tf.float32, shape=1, name='u_activetime_at4'),
+    #     "u_activetime_at5": tf.placeholder(dtype=tf.float32, shape=1, name='u_activetime_at5'),
+    #
+    #     "i_mini_img_size": tf.placeholder(dtype=tf.float32, shape=1, name='i_mini_img_size'),
+    #     "i_comment_count": tf.placeholder(dtype=tf.float32, shape=1, name='i_comment_count'),
+    # }
+    # serving_fn = estimator.export.build_raw_serving_input_receiver_fn(features)
 
     deepfm.export_savedmodel(
         export_dir_base=FLAGS.export_path,

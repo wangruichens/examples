@@ -52,5 +52,6 @@ def main(_):
     print(prediction)
     print("Time used:{0}ms".format(round(elapsed * 1000, 2)))
 
+
 if __name__ == '__main__':
     tf.app.run()

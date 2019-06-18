@@ -2,11 +2,12 @@
 
 import pandas as pd
 import tensorflow as tf
+from tensorflow_estimator import estimator
 
 COLUMN_NAMES = ['SepalLength', 'SepalWidth', 'PetalLength', 'PetalWidth', 'Species']
 SPECIES = ['Setosa', 'Versicolor', 'Virginica']
 BATCH_SIZE = 100
-STEPS = 1000
+STEPS = 10000
 
 # load data
 y_name = 'Species'
@@ -36,10 +37,26 @@ def eval_input_fn(features, labels, batch_size):
 feature_columns = [tf.feature_column.numeric_column(key=key)
                    for key in train_x.keys()]
 
-classifier = tf.estimator.DNNClassifier(
+test = tf.feature_column.numeric_column(train_x.keys()[0], default_value=0.0)
+test = tf.feature_column.bucketized_column(test,[0.1,1,100])
+test_emb = tf.feature_column.embedding_column(test, 10)
+feature_columns.append(test_emb)
+
+session_config = tf.ConfigProto()
+
+mirrored_strategy = tf.distribute.MirroredStrategy()
+
+
+config = estimator.RunConfig(
+    train_distribute=mirrored_strategy,
+    eval_distribute=mirrored_strategy,
+)
+
+classifier = estimator.DNNClassifier(
     feature_columns=feature_columns,
     hidden_units=[10, 10],
-    n_classes=3)
+    n_classes=3,
+    config=config)
 
 classifier.train(
     input_fn=lambda: train_input_fn(train_x, train_y, batch_size=BATCH_SIZE),
