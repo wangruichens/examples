@@ -1,4 +1,4 @@
-# Performance Analysis
+# DeepFM Performance Analysis
 
 采用tf.distribute.MirroredStrategy()。2块1080ti GPU，大概 9 global_step/sec。
 
