@@ -1,6 +1,6 @@
 # DeepFM Performance Analysis
 
-采用tf.distribute.MirroredStrategy()。2块1080ti GPU，大概 9 global_step/sec。
+采用tf.distribute.MirroredStrategy()。2块1080ti GPU，优化input_fn后，大概 11 global_step/sec。
 
 ```angular2
 +-----------------------------------------------------------------------------+
@@ -10,22 +10,22 @@
 | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
 |===============================+======================+======================|
 |   0  GeForce GTX 108...  Off  | 00000000:01:00.0 Off |                  N/A |
-| 44%   62C    P2   106W / 250W |  10777MiB / 11178MiB |     80%      Default |
+| 55%   74C    P2   145W / 250W |  10736MiB / 11178MiB |     84%      Default |
 +-------------------------------+----------------------+----------------------+
 |   1  GeForce GTX 108...  Off  | 00000000:02:00.0 Off |                  N/A |
-| 35%   53C    P2   144W / 250W |  10747MiB / 11178MiB |     66%      Default |
+| 50%   69C    P2   130W / 250W |  10747MiB / 11178MiB |     82%      Default |
 +-------------------------------+----------------------+----------------------+
 ```
 
 
 - 两块GPU
 ```angular2
-INFO:tensorflow:loss = 0.41606092, step = 30 (0.964 sec)
-INFO:tensorflow:global_step/sec: 9.57605
-INFO:tensorflow:loss = 0.3935175, step = 40 (1.044 sec)
-INFO:tensorflow:global_step/sec: 9.48205
-INFO:tensorflow:loss = 0.38121438, step = 50 (1.055 sec)
-INFO:tensorflow:global_step/sec: 9.57724
+INFO:tensorflow:loss = 0.37087572, step = 30 (0.877 sec)
+INFO:tensorflow:global_step/sec: 11.4237
+INFO:tensorflow:loss = 0.35228056, step = 40 (0.875 sec)
+INFO:tensorflow:global_step/sec: 11.5256
+INFO:tensorflow:loss = 0.3553083, step = 50 (0.868 sec)
+INFO:tensorflow:global_step/sec: 11.6155
 ```
 
 - 一块GPU

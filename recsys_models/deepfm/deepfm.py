@@ -608,10 +608,14 @@ def _parse_example(serial_exmp):
 
 def input_fn(filenames, batch_size=32, num_epochs=-1, need_shuffle=False):
     dataset = tf.data.TFRecordDataset(filenames)
-    dataset = dataset.map(_parse_example, num_parallel_calls=4)
+    dataset = dataset.map(_parse_example, num_parallel_calls=4).batch(batch_size)
     if need_shuffle:
-        dataset = dataset.shuffle(batch_size * 100)
-    dataset = dataset.prefetch(buffer_size=2).batch(batch_size).repeat(num_epochs)
+        dataset = dataset.shuffle(buffer_size=100)
+    # https://www.tensorflow.org/guide/performance/datasets#map_and_cache
+    # The Dataset.prefetch(m) transformation prefetches m elements of its direct input.
+    # Since its direct input is dataset.batch(n) and each element of that dataset is a batch (of n elements),
+    # it will prefetch m batches.
+    dataset = dataset.prefetch(buffer_size=100).repeat(num_epochs)
     return dataset
 
 
