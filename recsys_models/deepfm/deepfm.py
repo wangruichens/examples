@@ -3,25 +3,26 @@ from tensorflow import feature_column
 import sys
 from tensorflow_estimator import estimator
 import os
+from time import time
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+# os.environ["CUDA_VISIBLE_DEVICES"] = ''
 # tf.enable_eager_execution()
 
 
 FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_integer("embedding_size", 32, "Embedding size")
-tf.app.flags.DEFINE_float("learning_rate", 0.01, "Learning rate")
+tf.app.flags.DEFINE_float("learning_rate", 0.001, "Learning rate")
 tf.app.flags.DEFINE_float("dropout", 0.5, "Dropout rate")
 tf.app.flags.DEFINE_string("task_type", 'train', "Task type {train, infer, eval, export}")
-tf.app.flags.DEFINE_integer("num_epochs", 10, "Number of epochs")
+tf.app.flags.DEFINE_integer("num_epochs", 5, "Number of epochs")
 tf.app.flags.DEFINE_string("deep_layers", '200,200,200', "deep layers")
 tf.app.flags.DEFINE_string("dataset_path", '/home/wangrc/deepfm_data/', "Data path")
 tf.app.flags.DEFINE_integer("dataset_parts", 100, "Tfrecord counts")
 tf.app.flags.DEFINE_integer("dataset_eval", 1, "Eval tfrecord")
 tf.app.flags.DEFINE_string("export_path", './export/', "Model export path")
 tf.app.flags.DEFINE_integer("batch_size", 1024, "Number of batch size")
-tf.app.flags.DEFINE_integer("log_steps", 100, "Log_step_count_steps")
-tf.app.flags.DEFINE_integer("save_checkpoints_steps", 2000, "save_checkpoints_steps")
+tf.app.flags.DEFINE_integer("log_steps", 10, "Log_step_count_steps")
+tf.app.flags.DEFINE_integer("save_checkpoints_steps", 500, "save_checkpoints_steps")
 tf.app.flags.DEFINE_boolean("mirror", True, "Mirrored Strategy")
 
 feature_description = {
@@ -609,8 +610,8 @@ def input_fn(filenames, batch_size=32, num_epochs=-1, need_shuffle=False):
     dataset = tf.data.TFRecordDataset(filenames)
     dataset = dataset.map(_parse_example, num_parallel_calls=4)
     if need_shuffle:
-        dataset = dataset.shuffle(batch_size * 10)
-    dataset = dataset.prefetch(buffer_size=1).batch(batch_size).repeat(num_epochs)
+        dataset = dataset.shuffle(batch_size * 100)
+    dataset = dataset.prefetch(buffer_size=2).batch(batch_size).repeat(num_epochs)
     return dataset
 
 
@@ -700,17 +701,17 @@ def main(_):
     # session_config = tf.ConfigProto(log_device_placement=True)
     # session_config.gpu_options.allow_growth = True
 
-    mirrored_strategy = None
+    distribute_strategy = None
     if FLAGS.mirror:
-        mirrored_strategy = tf.distribute.MirroredStrategy()
+        distribute_strategy = tf.distribute.MirroredStrategy()
 
     config = estimator.RunConfig(
         save_checkpoints_steps=FLAGS.save_checkpoints_steps,
         keep_checkpoint_max=5,
         log_step_count_steps=FLAGS.log_steps,
         save_summary_steps=200,
-        train_distribute=mirrored_strategy,
-        eval_distribute=mirrored_strategy
+        train_distribute=distribute_strategy,
+        eval_distribute=distribute_strategy
     )
 
     model_params = {
@@ -748,7 +749,10 @@ def main(_):
             eval_files,
             num_epochs=1,
             batch_size=FLAGS.batch_size), steps=None, start_delay_secs=1, throttle_secs=5)
+        start = time()
         estimator.train_and_evaluate(deepfm, train_spec, eval_spec)
+        elapsed = (time() - start)
+        print("Training time used: {0}ms".format(round(elapsed * 1000, 2)))
     elif FLAGS.task_type == 'eval':
         deepfm.evaluate(input_fn=lambda: input_fn(eval_files, num_epochs=1, batch_size=FLAGS.batch_size))
     elif FLAGS.task_type == 'predict':
