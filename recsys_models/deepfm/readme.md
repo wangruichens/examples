@@ -1,6 +1,6 @@
 # DeepFM Performance Analysis
 
-采用tf.distribute.MirroredStrategy()。2块1080ti GPU，优化input_fn后，大概 11 global_step/sec。
+采用tf.distribute.MirroredStrategy()。2块1080ti GPU，优化input_fn后，GPU资源基本可以满载训练，大概 11 global_step/sec。
 
 ```angular2
 +-----------------------------------------------------------------------------+
