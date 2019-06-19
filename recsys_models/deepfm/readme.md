@@ -2,7 +2,7 @@
 
 采用tf.distribute.MirroredStrategy()。2块1080ti GPU，优化input_fn后，GPU资源基本可以满载训练，大概 11 global_step/sec。
 
-estimator打出来的log可以看到，一块GPU和两块GPU的 global_step/sec几乎相同。但是实际上两块GPU每个step跑的是两份数据。[参考这里](http://keep.01ue.com/?pi=774414&_a=app&_c=index&_m=p)。比如同样条数的训练数据。同样epoch。 单GPU需要1000 step, 双GPU可能只需要500,600 step就可以跑完一轮。
+estimator打出来的log可以看到，一块GPU和两块GPU的 global_step/sec几乎相同。但是实际上两块GPU每个step跑的是两份数据。[参考这里](http://keep.01ue.com/?pi=774414&_a=app&_c=index&_m=p)。比如同样条数的训练数据,同样epoch, 单GPU需要1000 step, 双GPU可能只需要500,600 step就可以跑完一轮。
 
 ```angular2
 +-----------------------------------------------------------------------------+
