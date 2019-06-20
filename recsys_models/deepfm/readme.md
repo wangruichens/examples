@@ -41,3 +41,21 @@ INFO:tensorflow:global_step/sec: 11.0983
 
 ```
 
+使用grpc_client调用deepfm模型，serving在cpu上, 平均时间：
+```angular2
+Batch size:  500
+Predict AUC:  0.656185817244856
+Predict time used: 0.37ms
+
+Batch size:  500
+Predict AUC:  0.6375953159041394
+Predict time used: 0.36ms
+
+Batch size:  200
+Predict AUC:  0.6865367839488224
+Predict time used: 0.32ms
+
+Batch size:  200
+Predict AUC:  0.6835420068953004
+Predict time used: 0.29ms
+```
